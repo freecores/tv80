@@ -1,0 +1,177 @@
+<?xml version="1.0"?>
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd">
+<?rfc toc="yes"?>
+<?rfc private="$Revision: 1.4 $"?>
+<?rfc compact="yes"?>
+<rfc>
+<front>
+<title>tv80 Core Documentation</title>
+<author initials="G." surname="Hutchison" fullname="Guy Hutchison">
+<organization>OpenCores.org</organization>
+<address>
+<email>ghutchis@opencores.org</email>
+</address>
+</author>
+<date month="October" year="2004" />
+<area>General</area>
+<keyword>private</keyword>
+<keyword>XML</keyword>
+<keyword>Extensible Markup Language</keyword>
+<abstract><t>
+A synthesizable 8-bit microprocessor which is instruction-set compatable
+with the Z80, targetted at embedded and system-on-a-chip designs.
+</t></abstract>
+</front>
+<middle>
+    <section title="Background">
+        <t>The tv80 core was created as a Verilog port of the <xref target="t80">VHDL T80 core</xref>, for use as a maintenence processor inside an ASIC.
+            The tv80 has been modified since then for better synthesis
+            timing/area results, and to incorporate several bug-fixes.</t>
+        <t>The T80, and the tv80 derived from it, attempt to maintain the
+            original cycle timings of the Z80, but have radically different
+            internal designs and timings.  With its target being ASIC and
+            embedded applications, the tv80 does not attempt to maintain
+            the original pinout of the Z80.</t>
+    </section>
+<section title="Verification Environment">
+ <section title="Memory Map">
+<t>
+Environment memory space is divided into a 32k ROM region and a 32k RAM
+region, as follows:
+
+<figure>
+<artwork>
+  0000-7FFF:  ROM
+  8000-FFFF:  RAM
+</artwork>
+</figure>
+
+<t>Environment I/O space is allocated as follows:</t>
+
+<figure>
+<artwork>
+  00-0F:  Unused
+  10-1F:  Test devices
+  20-7F:  Unused
+  80-9F:  Environment control
+  A0-FF:  Unused
+</artwork></figure>
+</t>
+ </section>
+ <section title="Control Registers">
+The tv80 environment is controlled by the program under simulation.  The
+program can affect the environment through a set of control registers,
+which are mapped into I/O space.
+
+  <section title="Simulation control (0x80)">
+
+    <list style="symbols">
+     <t>   Write '01' to end simulation with test passed</t>
+     <t>   Write '02' to end with test failed</t>
+     <t>   Write '03' to turn on dumping</t>
+     <t>   Write '04' to turn off dumping</t>
+    </list>
+  </section>
+
+  <section title="Message output (0x81)">
+<t>
+        Write characters to this port one at a time.  When the
+        newline ('\n', ASCII 0x0A) character is written, the 
+        environment will print out the collected string.
+</t>
+  </section>
+  <section title="Timeout control (0x82)">
+    <t>
+        Bit[0] enables the timeout counter,
+        Bit[1] resets the counter to 0.
+        Timeout counter defaults to enabled at simulation start.
+    </t>
+  </section>
+
+  <section title="Max timeout (0x84, 0x83)">
+   <t>
+        Holds 16-bit timeout value (amount of time in clocks before
+        timeout error occurs).
+   </t>
+  </section>
+  <section title="Interrupt countdown (0x90)">
+    <t>
+        When set, starts a countdown (in clocks) until assertion of
+        the INT_N signal.
+   </t>
+  </section>
+  <section title="Checksum value (0x91)">
+    <t>This register holds the checksum value of all data
+       written to the accumulate register.  The checksum is a simple
+       twos-complement checksum, so it can be compared with a CPU-generated 
+       checksum.</t>
+    <t>This register is readable and writeable.  Writing the register sets
+       the current checksum value.</t>
+  </section>
+  <section title="Checksum accumulate (0x92)">
+    <t>This write-only register adds the written value to the value
+       contained in the Checksum Value register.</t>
+  </section>
+  <section title="Increment on read (0x93)">
+    <t>This register increments every time it is read, so reading it
+       repeatedly generates an incrementing sequence.  It can be reset
+       by writing it to a new starting value.</t>
+  </section>
+
+ </section>
+ <section title="Tool Chain">
+     <t>The minimum toolchain required to simulate the tv80 is the
+         <xref target="cver">CVer</xref> Verilog simulator, and the
+         <xref target="sdcc">SDCC</xref> compiler/assembler/linker.  In
+         addition, to run the <xref target="tvs80">tvs80</xref> instruction
+         test suite, the <xref target="dosbox">DOSBox</xref> DOS emulator
+         is required.
+     </t>
+ </section>
+ <section title="Tests">
+   <t>Most of the tests in the tv80 environment are written in C, and should
+       be compiled with the <xref target="sdcc">sdcc</xref> compiler.  
+   </t>
+     <section anchor="tvs80" title="tvs80 test">
+      <t>The tvs80 test is different than the rest of the tests, and is 
+         written in its own flavor of assembly language.  This test provides
+         a fairly comprehensive Z80 instruction test.</t>
+      <t>The assembler for this test only runs under DOS.  To assemble
+          under Unix/Linux, the <xref target="dosbox">"dosbox" DOS emulator</xref> is required.  A script
+         to run the assembler under dosbox, as well as the tvs80.asm source,
+         is checked in under the "tests/tvs80" directory.</t>
+     </section>
+ </section>
+</section>
+</middle>
+<back>
+    <references>
+        <reference anchor="t80" target="http://www.opencores.org/projects.cgi/web/t80/overview">
+            <front>
+                <title>VHDL T80 Core</title>
+                <author initials="D." surname="Wallner" fullname="Daniel Wallner">
+                    <organization>OpenCores.org</organization>
+                </author>
+            </front>
+        </reference>
+        <reference anchor="sdcc" target="http://sdcc.sourceforge.net">
+            <front>
+                <title>Small Device C Compiler</title>
+            </front>
+        </reference>
+        <reference anchor="cver" target="http://www.pragmatic-c.com/gpl-cver">
+            <front>
+                <title>GPL Cver Simulator</title>
+                <author initials="A." surname="Vanvick" fullname="Andrew Vanvick">
+                    <organization>Pragmatic C Software</organization>
+                </author>
+            </front>
+        </reference>
+        <reference anchor="dosbox" target="http://dosbox.sourceforge.net">
+            <front>
+                <title>DOSBox</title>
+            </front>
+        </reference>
+    </references>
+</back>
+</rfc>
