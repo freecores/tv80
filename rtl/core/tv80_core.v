@@ -68,8 +68,10 @@ module tv80_core (/*AUTOARG*/
   output        stop;           
 
   reg    m1_n;          
-  reg    iorq;          
-  reg    rfsh_n;                
+  reg    iorq; 
+`ifdef TV80_REFRESH         
+  reg    rfsh_n;   
+`endif             
   reg    halt_n;                
   reg    busak_n;               
   reg [15:0] A; 
@@ -92,7 +94,9 @@ module tv80_core (/*AUTOARG*/
   reg [7:0]     ACC, F;
   reg [7:0]     Ap, Fp;
   reg [7:0]     I;
+`ifdef TV80_REFRESH
   reg [7:0]     R;
+`endif
   reg [15:0]    SP, PC;
   reg [7:0]     RegDIH;
   reg [7:0]     RegDIL;
@@ -721,7 +725,11 @@ module tv80_core (/*AUTOARG*/
                         
                         2'b01 :
                           begin
+                            `ifdef TV80_REFRESH
                             ACC <= #1 R;
+                            `else
+                            ACC <= #1 0;
+                            `endif
                             F[Flag_P] <= #1 IntE_FF2;
                           end
                         
@@ -1037,7 +1045,7 @@ module tv80_core (/*AUTOARG*/
             4'b1110 :
               BusB <= #1 8'b00000000;
             default :
-              BusB <= #1 8'hxx;
+              BusB <= #1 8'h0;
           endcase
 
           case (Set_BusA_To)
@@ -1063,7 +1071,7 @@ module tv80_core (/*AUTOARG*/
             4'b1010 :
               BusA <= #1 8'b00000000;
             default :
-              BusB <= #1  8'hxx;
+              BusA <= #1  8'h0;
           endcase
         end
     end
@@ -1094,7 +1102,9 @@ module tv80_core (/*AUTOARG*/
                 end
             end
         end
-    end
+    end // always @ (posedge clk or negedge reset_n)
+`else // !`ifdef TV80_REFRESH
+  assign rfsh_n = 1'b1;
 `endif  
 
   always @(/*AUTOSENSE*/BusAck or Halt_FF or I_DJNZ or IntCycle
