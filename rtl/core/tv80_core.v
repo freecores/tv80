@@ -301,6 +301,22 @@ module tv80_core (/*AUTOARG*/
       endcase // case(num)
     end
   endfunction // number_to_bitvec
+
+  function [2:0] mcyc_to_number;
+    input [6:0] mcyc;
+    begin
+      casez (mcyc)
+        7'b1zzzzzz : mcyc_to_number = 3'h7;
+        7'bz1zzzzz : mcyc_to_number = 3'h6;
+        7'bzz1zzzz : mcyc_to_number = 3'h5;
+        7'bzzz1zzz : mcyc_to_number = 3'h4;
+        7'bzzzz1zz : mcyc_to_number = 3'h3;
+        7'bzzzzz1z : mcyc_to_number = 3'h2;
+        7'bzzzzzz1 : mcyc_to_number = 3'h1;
+        default : mcyc_to_number = 3'h1;
+      endcase
+    end
+  endfunction
   
   always @(/*AUTOSENSE*/mcycle or mcycles or tstate or tstates)
     begin
@@ -1249,7 +1265,7 @@ module tv80_core (/*AUTOARG*/
                           if (NextIs_XY_Fetch == 1'b1 ) 
                             begin
                               mcycle <= #1 7'b0100000;
-                              Pre_XY_F_M <= #1 mcycle;
+                              Pre_XY_F_M <= #1 mcyc_to_number(mcycle);
                               if (IR == 8'b00110110 && Mode == 0 ) 
                                 begin
                                   Pre_XY_F_M <= #1 3'b010;
