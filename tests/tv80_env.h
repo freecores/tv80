@@ -38,6 +38,8 @@ sfr at 0x91 cksum_value;
 sfr at 0x92 cksum_accum;
 sfr at 0x93 inc_on_read;
 sfr at 0x94 randval;
+sfr at 0x95 nmi_cntdwn;
+sfr at 0xA0 nmi_trig_opcode;
 
 #define SC_TEST_PASSED 0x01
 #define SC_TEST_FAILED 0x02

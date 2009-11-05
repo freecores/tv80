@@ -1,3 +1,4 @@
+`timescale 1ns/100ps
 `define TV80_CORE_PATH tb_top.tv80s_inst.i_tv80_core
 
 module tb_top;
@@ -18,7 +19,7 @@ module tb_top;
   wire        busak_n; 
   wire [15:0] A;
   wire [7:0]  di;
-  wire [7:0]  do;
+  wire [7:0]  d_out;
   wire 	      ram_rd_cs, ram_wr_cs, rom_rd_cs;
   reg         tx_clk;
   
@@ -54,7 +55,7 @@ module tb_top;
      .halt_n				(halt_n),
      .busak_n				(busak_n),
      .A					(A[15:0]),
-     .do				(do[7:0]),
+     .dout				(d_out[7:0]),
      // Inputs
      .reset_n				(reset_n),
      .clk				(clk),
@@ -70,7 +71,7 @@ module tb_top;
      .rd_data				(di),
      // Inputs
      .wr_clk				(clk),
-     .wr_data				(do),
+     .wr_data				(d_out),
      .wr_cs				(ram_wr_cs),
      .addr				(A[14:0]),
      .rd_cs				(ram_rd_cs));
@@ -96,7 +97,7 @@ module tb_top;
      .rd_n				(rd_n),
      .wr_n				(wr_n),
      .addr				(A[7:0]),
-     .DO				(do[7:0]));
+     .D_OUT				(d_out[7:0]));
 
   //----------------------------------------------------------------------
   // UART
@@ -105,7 +106,7 @@ module tb_top;
   wire                uart_cs_n;
   wire [7:0]          uart_rd_data;
 
-  wire                sin;
+  wire                ser_in;
   wire                cts_n;
   wire                dsr_n;
   wire                ri_n;
@@ -123,7 +124,7 @@ module tb_top;
   
   assign              uart_cs_n = ~(!iorq_n & (A[7:3] == 5'h3));
   assign              di = (!uart_cs_n & !rd_n) ? uart_rd_data : 8'bz;
-  assign              sin = sout;
+  assign              ser_in = sout;
 
   T16450 uart0
     (.reset_n     (reset_n),
@@ -133,9 +134,9 @@ module tb_top;
      .rd_n        (rd_n),
      .wr_n        (wr_n),
      .addr        (A[2:0]),
-     .wr_data     (do),
+     .wr_data     (d_out),
      .rd_data     (uart_rd_data),
-     .sin         (sin),
+     .sin         (ser_in),
      .cts_n       (cts_n),
      .dsr_n       (dsr_n),
      .ri_n        (ri_n),
@@ -190,7 +191,7 @@ module tb_top;
      .rd_n                              (rd_n),
      .wr_n                              (wr_n),
      .addr                              (A[15:0]),
-     .wr_data                           (do));
+     .wr_data                           (d_out));
   
   //----------------------------------------------------------------------
   // Global Initialization

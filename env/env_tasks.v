@@ -23,8 +23,13 @@ task dumpon;
     begin
       if (!dumping)
 	begin
+`ifdef VCS
+          $vcdpluson;
+          $vcdplusmemon;
+`else
 	  $dumpfile (`DUMPFILE_NAME);
 	  $dumpvars;
+`endif
 	  dumping = 1;
 	end
     end
@@ -32,7 +37,12 @@ endtask // dumpon
 
 task dumpoff;
     begin
+`ifdef VCS
+      $vcdplusoff;
+      $vcdplusmemoff;
+`else
       // ???
+`endif
     end
 endtask // dumpoff
 

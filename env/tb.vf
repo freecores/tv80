@@ -7,6 +7,7 @@
  * 
  */
 
+env/tb_top.v
 rtl/core/tv80_alu.v
 rtl/core/tv80_mcode.v
 rtl/core/tv80_reg.v
@@ -18,7 +19,6 @@ rtl/simple_gmii/simple_gmii_regs.v
 rtl/simple_gmii/sync2.v
 rtl/simple_gmii/ram_1r_1w.v
 rtl/uart/T16450.v
-env/tb_top.v
 env/env_io.v
 env/op_decode.v
 env/async_mem.v

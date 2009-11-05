@@ -24,7 +24,7 @@
 
 module tv80_core (/*AUTOARG*/
   // Outputs
-  m1_n, iorq, no_read, write, rfsh_n, halt_n, busak_n, A, do, mc, ts, 
+  m1_n, iorq, no_read, write, rfsh_n, halt_n, busak_n, A, dout, mc, ts, 
   intcycle_n, IntE, stop, 
   // Inputs
   reset_n, clk, cen, wait_n, int_n, nmi_n, busrq_n, dinst, di
@@ -60,7 +60,7 @@ module tv80_core (/*AUTOARG*/
   output [15:0] A; 
   input [7:0]   dinst;  
   input [7:0]   di;     
-  output [7:0]  do;     
+  output [7:0]  dout;     
   output [6:0]  mc;     
   output [6:0]  ts;     
   output        intcycle_n;     
@@ -75,7 +75,7 @@ module tv80_core (/*AUTOARG*/
   reg    halt_n;                
   reg    busak_n;               
   reg [15:0] A; 
-  reg [7:0]  do;        
+  reg [7:0]  dout;        
   reg [6:0]  mc;        
   reg [6:0]  ts;        
   reg   intcycle_n;     
@@ -370,7 +370,7 @@ module tv80_core (/*AUTOARG*/
         Save_Mux = ALU_Q;
     end // always @ *
   
-  always @ (posedge clk)
+  always @ (posedge clk or negedge reset_n)
     begin
       if (reset_n == 1'b0 ) 
         begin
@@ -382,7 +382,7 @@ module tv80_core (/*AUTOARG*/
           XY_State <= #1 2'b00;
           IStatus <= #1 2'b00;
           mcycles <= #1 3'b000;
-          do <= #1 8'b00000000;
+          dout <= #1 8'b00000000;
 
           ACC <= #1 8'hFF;
           F <= #1 8'hFF;
@@ -457,6 +457,7 @@ module tv80_core (/*AUTOARG*/
                       else if (Halt_FF == 1'b1 || (IntCycle == 1'b1 && IStatus == 2'b10) || NMICycle == 1'b1 ) 
                         begin
                           IR <= #1 8'b00000000;
+			  TmpAddr[7:0] <= #1 dinst; // Special M1 vector fetch
                         end 
                       else 
                         begin
@@ -804,16 +805,16 @@ module tv80_core (/*AUTOARG*/
 
               if (tstate[1] && Auto_Wait_t1 == 1'b0 ) 
                 begin
-                  do <= #1 BusB;
+                  dout <= #1 BusB;
                   if (I_RLD == 1'b1 ) 
                     begin
-                      do[3:0] <= #1 BusA[3:0];
-                      do[7:4] <= #1 BusB[3:0];
+                      dout[3:0] <= #1 BusA[3:0];
+                      dout[7:4] <= #1 BusB[3:0];
                     end
                   if (I_RRD == 1'b1 ) 
                     begin
-                      do[3:0] <= #1 BusB[7:4];
-                      do[7:4] <= #1 BusA[3:0];
+                      dout[3:0] <= #1 BusB[7:4];
+                      dout[7:4] <= #1 BusA[3:0];
                     end
                 end
 
@@ -847,7 +848,7 @@ module tv80_core (/*AUTOARG*/
                     5'b10111 :
                       ACC <= #1 Save_Mux;
                     5'b10110 :
-                      do <= #1 Save_Mux;
+                      dout <= #1 Save_Mux;
                     5'b11000 :
                       SP[7:0] <= #1 Save_Mux;
                     5'b11001 :
@@ -1098,7 +1099,7 @@ module tv80_core (/*AUTOARG*/
   //
   //-------------------------------------------------------------------------
 `ifdef TV80_REFRESH
-  always @ (posedge clk)
+  always @ (posedge clk or negedge reset_n)
     begin
       if (reset_n == 1'b0 ) 
         begin
@@ -1143,10 +1144,9 @@ module tv80_core (/*AUTOARG*/
   //
   //-----------------------------------------------------------------------
 
-  always @ (posedge clk)
+  always @ (posedge clk or negedge reset_n)
     begin : sync_inputs
-
-      if (reset_n == 1'b0 ) 
+      if (~reset_n) 
         begin
           BusReq_s <= #1 1'b0;
           INT_s <= #1 1'b0;
@@ -1178,7 +1178,7 @@ module tv80_core (/*AUTOARG*/
   //
   //-----------------------------------------------------------------------
 
-  always @ (posedge clk)
+  always @ (posedge clk or negedge reset_n)
     begin
       if (reset_n == 1'b0 ) 
         begin
@@ -1206,9 +1206,9 @@ module tv80_core (/*AUTOARG*/
                 end 
               else 
                 begin
-                  Auto_Wait_t1 <= #1 Auto_Wait || iorq_i;
+		  Auto_Wait_t1 <= #1 Auto_Wait || (iorq_i & ~Auto_Wait_t2);
                 end
-              Auto_Wait_t2 <= #1 Auto_Wait_t1;
+              Auto_Wait_t2 <= #1 Auto_Wait_t1 & !T_Res;
               No_BTR <= #1 (I_BT && (~ IR[4] || ~ F[Flag_P])) ||
                         (I_BC && (~ IR[4] || F[Flag_Z] || ~ F[Flag_P])) ||
                         (I_BTR && (~ IR[4] || F[Flag_Z]));
@@ -1216,7 +1216,8 @@ module tv80_core (/*AUTOARG*/
                 begin
                   if (SetEI == 1'b1 ) 
                     begin
-                      IntE_FF1 <= #1 1'b1;
+                      if (!NMICycle)
+                        IntE_FF1 <= #1 1'b1;
                       IntE_FF2 <= #1 1'b1;
                     end
                   if (I_RETN == 1'b1 ) 
@@ -1373,8 +1374,5 @@ module tv80_core (/*AUTOARG*/
         end
     end // always @ *
   
-// synopsys dc_script_begin
-// set_attribute current_design "revision" "$Id: tv80_core.v,v 1.5 2005-01-26 18:55:47 ghutchis Exp $" -type string -quiet
-// synopsys dc_script_end
 endmodule // T80
 

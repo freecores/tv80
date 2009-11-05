@@ -2,6 +2,7 @@
         .module bintr_crt0
        	.globl	_main
         .globl  _isr
+        .globl  _nmi_isr
 
 	.area _HEADER (ABS)
 	;; Reset vector
@@ -22,10 +23,18 @@
 	reti
 	.org	0x38
         di
+        push    af
         call _isr
+        pop     af
         ei
 	reti
 	
+        .org    0x66
+        push    af
+        call    _nmi_isr
+        pop     af
+        retn
+        
 	.org	0x100
 init:
 	;; Stack at the top of memory.

@@ -36,7 +36,7 @@ def print_help ():
 if len(args) == 0:
     print_help()
 testname = args[0]
-simulator = "cver"
+simulator = "vcs +v2k -full64 -R -I +define+VCS=1 "
 
 filelist = " -f env/tb.vf"
 testdef  = " +incdir+env -l logs/%s.log +define+DUMPFILE_NAME=\\\"logs/%s.dump\\\" +define+PROGRAM_FILE=\\\"tests/%s.vmem\\\"" % (testname, testname, testname)
