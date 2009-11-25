@@ -30,7 +30,7 @@ module simple_gmii_top (/*AUTOARG*/
   );
 
   parameter txbuf_sz = 512, rxbuf_sz = 512;
-  parameter wr_ptr_sz = 10;
+  parameter wr_ptr_sz = 9;
 
   input                 clk;                    // To core0 of simple_gmii_core.v, ...
   input                 reset;                  // To core0 of simple_gmii_core.v, ...
@@ -148,7 +148,7 @@ module simple_gmii_top (/*AUTOARG*/
      .rx_data_stb                       (rx_rd_stb),
      .tx_data                           (tx_wr_data),
      .tx_data_stb                       (tx_wr_stb),
-     .config                            (en_preamble),
+     .cfg                               (en_preamble),
      .int_n                             (int_n),
      // Inputs
      .clk                               (clk),

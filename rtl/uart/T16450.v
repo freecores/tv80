@@ -190,17 +190,17 @@ module T16450
 
   always @*
     begin
-      IIR[7:3] <= #1 5'b00000;
+      IIR[7:3] = #1 5'b00000;
       if (IER[2] && (LSR[4:1] != 4'b0000))
-        IIR[2:0] <= #1 3'b110;
+        IIR[2:0] = #1 3'b110;
       else if (IER[0] && LSR[0])
-        IIR[2:0] <= #1 3'b100;
+        IIR[2:0] = #1 3'b100;
       else if (IER[1] && LSR[5])
-        IIR[2:0] <= #1 3'b010;
+        IIR[2:0] = #1 3'b010;
       else if (IER[3] && ((!MCR[4] && (MSR[3:0] != 0)) || (MCR[4] && (MCR[3:0] != 0))))
-        IIR[2:0] <= #1 3'b000;
+        IIR[2:0] = #1 3'b000;
       else
-        IIR[2:0] <= #1 3'b001;
+        IIR[2:0] = #1 3'b001;
     end
 
   // Baud x 16 clock generator
@@ -284,7 +284,7 @@ module T16450
             end
           if (rclk) 
             begin
-              if (!RX_Bit_Cnt && (RX_Filtered || (Bit_Phase == 4'b0111)))
+              if ((RX_Bit_Cnt == 0) && (RX_Filtered || (Bit_Phase == 4'b0111)))
                 begin
                   Bit_Phase <= #1 4'b0000;
                 end 
@@ -307,7 +307,7 @@ module T16450
                       LSR[4] <= #1 1'b1;     // BI
                     end
                 end
-              if (!RX_Bit_Cnt ) 
+              if (RX_Bit_Cnt == 0) 
                 begin
                   if (Bit_Phase == 4'b0111) 
                     begin

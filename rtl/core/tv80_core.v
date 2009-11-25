@@ -307,12 +307,12 @@ module tv80_core (/*AUTOARG*/
     begin
       casez (mcyc)
         7'b1zzzzzz : mcyc_to_number = 3'h7;
-        7'bz1zzzzz : mcyc_to_number = 3'h6;
-        7'bzz1zzzz : mcyc_to_number = 3'h5;
-        7'bzzz1zzz : mcyc_to_number = 3'h4;
-        7'bzzzz1zz : mcyc_to_number = 3'h3;
-        7'bzzzzz1z : mcyc_to_number = 3'h2;
-        7'bzzzzzz1 : mcyc_to_number = 3'h1;
+        7'b01zzzzz : mcyc_to_number = 3'h6;
+        7'b001zzzz : mcyc_to_number = 3'h5;
+        7'b0001zzz : mcyc_to_number = 3'h4;
+        7'b00001zz : mcyc_to_number = 3'h3;
+        7'b000001z : mcyc_to_number = 3'h2;
+        7'b0000001 : mcyc_to_number = 3'h1;
         default : mcyc_to_number = 3'h1;
       endcase
     end
@@ -855,6 +855,7 @@ module tv80_core (/*AUTOARG*/
                       SP[15:8] <= #1 Save_Mux;
                     5'b11011 :
                       F <= #1 Save_Mux;
+                    default : ;
                   endcase
                 end // if ((tstate == 1 && Save_ALU_r == 1'b0 && Auto_Wait_t1 == 1'b0) ||...              
             end // if (ClkEn == 1'b1 )         
@@ -954,7 +955,8 @@ module tv80_core (/*AUTOARG*/
               begin
                 RegWEH = ~ Read_To_Reg_r[0];
                 RegWEL = Read_To_Reg_r[0];
-              end
+              end // UNMATCHED !!
+            default : ;
           endcase // case(Read_To_Reg_r)
           
         end // if ((tstate == 1 && Save_ALU_r == 1'b0 && Auto_Wait_t1 == 1'b0) ||...
@@ -966,14 +968,15 @@ module tv80_core (/*AUTOARG*/
           RegWEL = 1'b1;
         end
 
-      if (IncDec_16[2] == 1'b1 && ((tstate[2] && wait_n == 1'b1 && mcycle != 3'b001) || (tstate[3] && mcycle[0])) ) 
+      if (IncDec_16[2] && ((tstate[2] && ~wait_n && ~mcycle[0]) || (tstate[3] && mcycle[0])) ) 
         begin
           case (IncDec_16[1:0])
             2'b00 , 2'b01 , 2'b10 :
               begin
                 RegWEH = 1'b1;
                 RegWEL = 1'b1;
-              end
+              end // UNMATCHED !!
+            default : ;
           endcase
         end
     end // always @ *
@@ -995,7 +998,7 @@ module tv80_core (/*AUTOARG*/
           RegDIH = RegBusA_r[15:8];
           RegDIL = RegBusA_r[7:0];
         end
-      else if (IncDec_16[2] == 1'b1 && ((tstate[2] && mcycle != 3'b001) || (tstate[3] && mcycle[0])) ) 
+      else if (IncDec_16[2] == 1'b1 && ((tstate[2] && ~mcycle[0]) || (tstate[3] && mcycle[0])) ) 
         begin
           RegDIH = ID16[15:8];
           RegDIL = ID16[7:0];

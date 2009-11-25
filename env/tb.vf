@@ -1,12 +1,4 @@
-/*
- * Copyright (c) 2003-2004 by Cisco Systems Inc.
- * $Id: tb.vf,v 1.5 2005-03-10 23:07:19 ghutchis Exp $
- * All rights reserved.
- *
- * Author: Guy Hutchison
- * 
- */
-
++incdir+env
 env/tb_top.v
 rtl/core/tv80_alu.v
 rtl/core/tv80_mcode.v

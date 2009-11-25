@@ -1,5 +1,5 @@
 module simple_gmii_regs (
-clk,reset,addr,wr_data,rd_data,doe,rd_n,wr_n,iorq_n,status_set,status_msk,control,control_clr,rx_len0,rx_len1,rx_data,rx_data_stb,tx_data,tx_data_stb,config,int_n);
+clk,reset,addr,wr_data,rd_data,doe,rd_n,wr_n,iorq_n,status_set,status_msk,control,control_clr,rx_len0,rx_len1,rx_data,rx_data_stb,tx_data,tx_data_stb,cfg,int_n);
 input clk;
 input reset;
 input [15:0] addr;
@@ -19,7 +19,7 @@ input [7:0] rx_data;
 output rx_data_stb;
 output [7:0] tx_data;
 output tx_data_stb;
-output config;
+output cfg;
 output int_n;
 reg [7:0] rd_data;
 reg block_select;
@@ -42,9 +42,9 @@ reg [7:0] tx_data;
 reg tx_data_rd_sel;
 reg tx_data_wr_sel;
 reg tx_data_stb;
-reg config;
-reg config_rd_sel;
-reg config_wr_sel;
+reg cfg;
+reg cfg_rd_sel;
+reg cfg_wr_sel;
 reg int_n;
 reg [7:0] int_vec;
 always @*
@@ -61,8 +61,8 @@ always @*
     rx_data_rd_sel = block_select & (addr[2:0] == 5) & !rd_n;
     tx_data_rd_sel = block_select & (addr[2:0] == 6) & !rd_n;
     tx_data_wr_sel = block_select & (addr[2:0] == 6) & !wr_n;
-    config_rd_sel = block_select & (addr[2:0] == 7) & !rd_n;
-    config_wr_sel = block_select & (addr[2:0] == 7) & !wr_n;
+    cfg_rd_sel = block_select & (addr[2:0] == 7) & !rd_n;
+    cfg_wr_sel = block_select & (addr[2:0] == 7) & !wr_n;
   end
 always @*
   begin
@@ -78,10 +78,10 @@ always @*
       rx_len1_rd_sel : rd_data = rx_len1;
       rx_data_rd_sel : rd_data = rx_data;
       tx_data_rd_sel : rd_data = tx_data;
-      config_rd_sel : rd_data = config;
+      cfg_rd_sel : rd_data = cfg;
       default : rd_data = int_vec;
     endcase
-    doe = status_rd_sel | status_msk_rd_sel | control_rd_sel | rx_len0_rd_sel | rx_len1_rd_sel | rx_data_rd_sel | tx_data_rd_sel | config_rd_sel;
+    doe = status_rd_sel | status_msk_rd_sel | control_rd_sel | rx_len0_rd_sel | rx_len1_rd_sel | rx_data_rd_sel | tx_data_rd_sel | cfg_rd_sel;
   end
 always @*
   begin
@@ -122,10 +122,10 @@ always @(posedge clk)
     else if (tx_data_wr_sel) tx_data_stb <= 1;
     else tx_data_stb <= 0;
   end
-// register: config
+// register: cfg
 always @(posedge clk)
   begin
-    if (reset) config <= 0;
-    else if (config_wr_sel) config <= wr_data;
+    if (reset) cfg <= 0;
+    else if (cfg_wr_sel) cfg <= wr_data;
   end
 endmodule

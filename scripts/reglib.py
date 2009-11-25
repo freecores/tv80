@@ -226,6 +226,8 @@ class register_group:
             self.add (read_stb_reg (params['name'],params['width']))
         elif (type == 'write_stb'):
             self.add (write_stb_reg (params['name'],params['width'],params['default']))
+        elif (type == 'hw_load'):
+            self.add (hw_load_reg (params['name'],params['width']))
         else:
             print "Unknown register type",type
 
@@ -295,6 +297,32 @@ class config_reg (basic_register):
 
     def write_cap (self):
         return 1
+
+class hw_load_reg (config_reg):
+    def __init__ (self, name='', width=0, default=0):
+        basic_register.__init__(self, name, width)
+        self.default = default
+        
+    def verilog_body (self):
+        statements = ["if (reset) %s <= %d;" % (self.name, self.default),
+                      "else if (%s_wr_sel) %s <= %s;" % (self.name, self.name, 'wr_data'),
+                      "else if (%s_load) %s <= %s_wrdata;" % (self.name,self.name,self.name)
+                      ]
+        return self.id_comment() + seq_block ('clk', statements)
+
+    def io (self):
+        return [ port('input', self.name+'_wrdata', self.width),
+                 port('input', self.name+'_load', 1),
+                 port('output',self.name, self.width) ]
+
+    def nets (self):
+        return [ net('reg', self.name, self.width),
+                 net('reg', self.name + '_rd_sel'),
+                 net('reg', self.name + '_wr_sel')]
+
+    def write_cap (self):
+        return 1
+
 
 class int_fixed_reg (basic_register):
     def __init__ (self, name, mask_reg, int_value, width=0):
