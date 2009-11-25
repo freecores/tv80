@@ -1,0 +1,6 @@
+#!/bin/bash
+
+verilator --sc rtl/core/tv80s.v rtl/core/tv80_alu.v \
+rtl/core/tv80_mcode.v rtl/core/tv80_reg.v rtl/core/tv80_core.v
+
+
