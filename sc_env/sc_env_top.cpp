@@ -1,5 +1,6 @@
 #include "systemc.h"
 #include "env_memory.h"
+#include "tv_responder.h"
 #include "Vtv80s.h"
 
 int sc_main(int argc, char *argv[])
@@ -20,6 +21,8 @@ int sc_main(int argc, char *argv[])
 	sc_signal<bool>	halt_n;
 	sc_signal<bool>	busak_n;
 	sc_signal<uint32_t>	di;
+	sc_signal<uint32_t> di_mem;
+	sc_signal<uint32_t> di_resp;
 	sc_signal<uint32_t>	dout;
 	sc_signal<uint32_t>	addr;
 	
@@ -50,7 +53,48 @@ int sc_main(int argc, char *argv[])
     env_memory0.rd_n (rd_n);
     env_memory0.wr_n (wr_n);
     env_memory0.addr (addr);
+    
+    tv_responder tv_resp0("tv_resp0");
+    tv_resp0.clk (clk);
+    tv_resp0.reset_n (reset_n);
+    tv_resp0.wait_n (wait_n);
+    tv_resp0.int_n (int_n);
+    tv_resp0.nmi_n (nmi_n);
+    tv_resp0.busak_n (busak_n);
+    tv_resp0.busrq_n (busrq_n);
+    tv_resp0.m1_n (m1_n);
+    tv_resp0.mreq_n (mreq_n);
+    tv_resp0.iorq_n (iorq_n);
+    tv_resp0.rd_n (rd_n);
+    tv_resp0.wr_n (wr_n);
+    tv_resp0.addr (addr);
+    tv_resp0.di_resp (di_resp);
+    tv_resp0.dout (dout);
+    tv_resp0.halt_n (halt_n);
+
+    // create dumpfile
+    sc_trace_file *trace_file;
+    trace_file = sc_create_vcd_trace_file("sc_tv80_env");
+    sc_trace (trace_file, clk, "clk");
+    sc_trace (trace_file, reset_n, "reset_n");
+    sc_trace (trace_file, wait_n, "wait_n");
+    sc_trace (trace_file, int_n, "int_n");
+    sc_trace (trace_file, nmi_n, "nmi_n");
+    sc_trace (trace_file, busrq_n, "busrq_n");
+    sc_trace (trace_file, m1_n, "m1_n");
+    sc_trace (trace_file, mreq_n, "mreq_n");
+    sc_trace (trace_file, iorq_n, "iorq_n");
+    sc_trace (trace_file, rd_n, "rd_n");
+    sc_trace (trace_file, wr_n, "wr_n");
+    sc_trace (trace_file, halt_n, "halt_n");
+    sc_trace (trace_file, busak_n, "busak_n");
+    sc_trace (trace_file, di, "di");
+    sc_trace (trace_file, dout, "dout");
+    sc_trace (trace_file, addr, "addr");
+
 
     sc_start(8000);
+    sc_close_vcd_trace_file (trace_file);
+    
     return 0;
 }

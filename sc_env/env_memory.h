@@ -18,11 +18,13 @@ SC_MODULE(env_memory) {
   unsigned char *memory;
 
   void event();
+  
+  void load_ihex (char *filename);
 
   SC_CTOR(env_memory) {
   	memory = new unsigned char[AM_DEPTH];
     SC_METHOD(event);
-    sensitive_pos << clk;
+    sensitive << clk.pos();
   }
 };
 

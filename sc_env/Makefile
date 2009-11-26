@@ -4,7 +4,8 @@ VERIDIR=../obj_dir
 INCLUDES=-I$(SYSTEMC)/include -I$(VERIDIR) -I$(VERILATOR_ROOT)/include
 LINKOPT=-L$(SYSTEMC)/lib-linux64 -lsystemc -lm
 DEFINES=-DDEBUG
-OBJFILES=sc_env_top.o env_memory.o $(VERIDIR)/Vtv80s.o $(VERIDIR)/Vtv80s__Syms.o verilated.o
+OBJFILES=sc_env_top.o env_memory.o tv_responder.o \
+$(VERIDIR)/Vtv80s.o $(VERIDIR)/Vtv80s__Syms.o verilated.o
 
 CXX=g++ -g $(INCLUDES) $(DEFINES)
 
