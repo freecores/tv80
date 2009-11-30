@@ -1,7 +1,7 @@
 #ifndef TV_RESPONDER_H_
 #define TV_RESPONDER_H_
 
-#include "systemc.h"
+#include "sc_env.h"
 
 SC_MODULE(tv_responder)
 {

@@ -1,4 +1,4 @@
-#include "systemc.h"
+#include "sc_env.h"
 
 #ifndef ENV_MEMORY_H
 #define ENV_MEMORY_H

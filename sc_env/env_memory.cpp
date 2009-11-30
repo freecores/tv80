@@ -26,7 +26,7 @@ void inline readline(FILE *fh, char *buf)
 	int c = 1;
 	
 	while (c) {
-		c = read (buf, 1, 1, fh);
+		c = fread (buf, 1, 1, fh);
 		if (c && (*buf == '\n'))
 			c = 0;
 		else buf++;
@@ -55,10 +55,20 @@ void inline readline(FILE *fh, char *buf)
 {
 	FILE *fh;
 	char line[80];
+        char *lp;
+        int rlen, addr, rtyp;
 	
 	fh = fopen (filename, "r");
 	
 	readline (fh, line);
+        while (strlen(line) > 0) {
+          printf ("DEBUG: strlen(line)=%d\n", strlen(line));
+          sscanf (line, "%2x%2x%2x", &rlen, &addr, &rtyp);
+          printf ("DEBUG: rlen=%d addr=%d rtyp=%d\n", rlen, addr, rtyp);
+          lp = line + 6;
+          for (int c=0; c<rlen; c++) {
+          }
+        }
 	
 	fclose (fh);
 }
