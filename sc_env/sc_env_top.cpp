@@ -1,7 +1,9 @@
 #include "systemc.h"
+#include "systemperl.h"
 #include "env_memory.h"
 #include "tv_responder.h"
 #include "Vtv80s.h"
+#include "SpTraceVcd.h"
 
 int sc_main(int argc, char *argv[])
 {
@@ -53,6 +55,7 @@ int sc_main(int argc, char *argv[])
     env_memory0.rd_n (rd_n);
     env_memory0.wr_n (wr_n);
     env_memory0.addr (addr);
+    env_memory0.reset_n (reset_n);
     
     tv_responder tv_resp0("tv_resp0");
     tv_resp0.clk (clk);
@@ -73,6 +76,7 @@ int sc_main(int argc, char *argv[])
     tv_resp0.halt_n (halt_n);
 
     // create dumpfile
+    /*
     sc_trace_file *trace_file;
     trace_file = sc_create_vcd_trace_file("sc_tv80_env");
     sc_trace (trace_file, clk, "clk");
@@ -91,10 +95,28 @@ int sc_main(int argc, char *argv[])
     sc_trace (trace_file, di, "di");
     sc_trace (trace_file, dout, "dout");
     sc_trace (trace_file, addr, "addr");
+    
+    // Start Verilator traces
+    Verilated::traceEverOn(true);
+    SpTraceFile *tfp = new SpTraceFile;
+    tv80s.trace (tfp, 99);
+    tfp->open ("tv80.vcd");
+    */
 
+	// check for command line argument
+	if (argc > 1) {
+		env_memory0.load_ihex (argv[1]);
+	}
+	
+	// set reset to 0 before sim start
+	reset_n.write (0);
 
-    sc_start(8000);
+    sc_start();
+    /*
     sc_close_vcd_trace_file (trace_file);
+    tfp->close();
+    */
+    
     
     return 0;
 }

@@ -5,6 +5,24 @@
 
 SC_MODULE(tv_responder)
 {
+  private:
+	char    str_buf [256];
+	int     buf_ptr;
+	
+	int     timeout_ctl;
+	int     cur_timeout;
+	int     max_timeout;
+	
+	int     int_countdown;
+	int     nmi_countdown;
+	uint8_t checksum;
+	int     ior_value;  // increment-on-read value
+	int     nmi_trigger; // trigger nmi when IR = this value
+	
+	int     reset_time;
+	bool    last_iowrite;
+  
+  public:
 	sc_in<bool>   clk;
 	
 	sc_out<bool>	reset_n;
@@ -26,8 +44,18 @@ SC_MODULE(tv_responder)
 	void event();
 	
 	SC_CTOR(tv_responder) {
-		SC_THREAD(event);
+		SC_METHOD(event);
 		sensitive << clk.pos();
+		
+		buf_ptr = 0;
+		cur_timeout = 0;
+		max_timeout = 10000;
+		timeout_ctl = 1;
+		int_countdown = 0;
+		nmi_countdown = 0;
+		nmi_trigger = 0;
+		reset_time = 16;
+		last_iowrite = false;
 	}
 };
 	

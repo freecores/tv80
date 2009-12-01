@@ -6,31 +6,43 @@ void env_memory::event()
   int lcl_cs;
   int ad;
   
+  // ignore activity during reset
+  if (!reset_n)
+  	return;
   if (!mreq_n && !wr_n && (addr < AM_DEPTH)) {
   	ad = (int) addr;
     memory[ad] = (unsigned char) wr_data.read();
 #ifdef DEBUG
-    printf ("Wrote %x to address %x\n", (int) wr_data.read(), ad);
+    //printf ("MEM WR %04x=%02x\n", ad, (int) wr_data.read());
 #endif
-  } else if (!mreq_n && !rd_n && (addr < AM_DEPTH)) {
+  } 
+  
+  // async read output
+  if (addr < AM_DEPTH) {
   	ad = (int) addr;
   	rd_data.write ( (unsigned int) memory[ad] );
-#ifdef DEBUG
-    printf ("Read %x from address %x\n", memory[ad], ad);
-#endif
   }
 }
 
-void inline readline(FILE *fh, char *buf)
+int inline readline(FILE *fh, char *buf)
 {
-	int c = 1;
+	int c = 1, cnt = 0;
 	
+	if (feof(fh)) {
+		*buf = (char) 0;
+		return 0;
+	}
 	while (c) {
 		c = fread (buf, 1, 1, fh);
-		if (c && (*buf == '\n'))
+		cnt++;
+		if (c && (*buf == '\n')) {
+			buf++;
+			*buf = (char) 0;
 			c = 0;
+		}
 		else buf++;
 	}
+	return cnt;
 }
 
 /*
@@ -55,20 +67,28 @@ void inline readline(FILE *fh, char *buf)
 {
 	FILE *fh;
 	char line[80];
-        char *lp;
-        int rlen, addr, rtyp;
+    char *lp;
+    int rlen, addr, rtyp, databyte;
+    int rv;
+    int dcount = 0;
 	
 	fh = fopen (filename, "r");
 	
-	readline (fh, line);
-        while (strlen(line) > 0) {
-          printf ("DEBUG: strlen(line)=%d\n", strlen(line));
-          sscanf (line, "%2x%2x%2x", &rlen, &addr, &rtyp);
-          printf ("DEBUG: rlen=%d addr=%d rtyp=%d\n", rlen, addr, rtyp);
-          lp = line + 6;
-          for (int c=0; c<rlen; c++) {
-          }
-        }
+	rv = readline (fh, line);
+    while (strlen(line) > 0) {
+      //printf ("DEBUG: strlen(line)=%d rv=%d line=%s\n", strlen(line), rv, line);
+      sscanf (line, ":%02x%04x%02x", &rlen, &addr, &rtyp);
+      //printf ("DEBUG: rlen=%d addr=%d rtyp=%d\n", rlen, addr, rtyp);
+      lp = line + 9;
+      for (int c=0; c<rlen; c++) {
+      	sscanf (lp, "%02x", &databyte);
+      	lp += 2;
+      	//printf ("DEBUG: loaded mem[%04x]=%02x\n", addr+c, databyte);
+      	memory[addr+c] = databyte; dcount++;
+      }
+      rv = readline (fh, line);
+    }
 	
 	fclose (fh);
+	printf ("ENVMEM  : Read %d bytes from %s\n", dcount, filename);
 }

@@ -14,6 +14,7 @@ SC_MODULE(env_memory) {
   sc_in<bool> wr_n;
   sc_in<uint32_t> addr;
   sc_out<uint32_t> rd_data; 
+  sc_in<bool> reset_n;
 
   unsigned char *memory;
 
@@ -24,7 +25,7 @@ SC_MODULE(env_memory) {
   SC_CTOR(env_memory) {
   	memory = new unsigned char[AM_DEPTH];
     SC_METHOD(event);
-    sensitive << clk.pos();
+    sensitive << clk.pos() << addr;
   }
 };
 
