@@ -27,7 +27,9 @@ status = {}
 
 def run_tests (test_list):
     for test_name in test_list:
-        os.system ("scripts/run %s" % test_name)
+        #os.system ("scripts/run %s" % test_name)
+	os.system ("(cd tests; make %s.ihx)" % test_name)
+        os.system ("sc_env/sc_env_top -i tests/%s.ihx | tee logs/%s.log" % (test_name, test_name))
 
 def check_results (test_list):
     print "%-20s %s" % ("Test", "Status")
@@ -38,9 +40,9 @@ def check_results (test_list):
             
             testl = testh.readline()
             while (testl != ''):
-                if (testl.find ("TEST PASSED")):
+                if (testl.find ("TEST PASSED") != -1):
                     status[test_name] = "passed"
-                elif (testl.find ("TEST FAILED")):
+                elif (testl.find ("TEST FAILED") != -1):
                     status[test_name] = "failed"
                 testl = testh.readline()
         

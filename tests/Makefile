@@ -20,9 +20,14 @@ C_LINK_OPTIONS=$(SDCC_ROOT)/share/sdcc/lib/z80/crt0.o
 %.o   : %.asm
 	$(AS) -l -o $*.o $^
 
+#hello.ihx : hello.c bintr_crt0.o
+#	$(CC) $^ --no-std-crt0 bintr_crt0.o
+otir.ihx : otir.o
+	$(CC) --no-std-crt0 $^
+
 %.ihx : %.o
 	#$(LD) $(LINK_OPTIONS) $(AS_LINK_OPTIONS) -i $* $^ -e
-	$(CC) $^ --no-std-crt0 bintr_crt0.o
+	$(CC) $^
 
 bintr.ihx : bintr.c bintr_crt0.o
 	$(CC) --no-std-crt0 bintr.c bintr_crt0.o

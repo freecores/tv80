@@ -4,10 +4,34 @@
 #include "tv_responder.h"
 #include "Vtv80s.h"
 #include "SpTraceVcd.h"
+#include <unistd.h>
+
+extern char *optarg;
+extern int optind, opterr, optopt;
 
 int sc_main(int argc, char *argv[])
 {
-	sc_clock clk("clk125", 8, SC_NS, 0.5, 0.0, SC_NS);
+	bool dumping = false;
+	bool memfile = false;
+	int index;
+	char *dumpfile_name;
+	char *mem_src_name;
+	SpTraceFile *tfp;
+	
+	while ( (index = getopt(argc, argv, "d:i:")) != -1) {
+		printf ("DEBUG: getopt optind=%d index=%d char=%c\n", optind, index, (char) index);
+		if  (index == 'd') {
+			dumpfile_name = new char(strlen(optarg)+1);
+			strcpy (dumpfile_name, optarg);
+			dumping = true;
+			printf ("VCD dump enabled to %s\n", dumpfile_name);
+		} else if (index == 'i') {
+			mem_src_name = new char(strlen(optarg)+1);
+			strcpy (mem_src_name, optarg);
+			memfile = true;
+		}
+	}
+	sc_clock clk("clk125", 8, SC_NS, 0.5);
 
 	sc_signal<bool>	reset_n;
 	sc_signal<bool>	wait_n;
@@ -95,17 +119,20 @@ int sc_main(int argc, char *argv[])
     sc_trace (trace_file, di, "di");
     sc_trace (trace_file, dout, "dout");
     sc_trace (trace_file, addr, "addr");
+    */
     
     // Start Verilator traces
-    Verilated::traceEverOn(true);
-    SpTraceFile *tfp = new SpTraceFile;
-    tv80s.trace (tfp, 99);
-    tfp->open ("tv80.vcd");
-    */
+    if (dumping) {
+    	Verilated::traceEverOn(true);
+    	tfp = new SpTraceFile;
+    	tv80s.trace (tfp, 99);
+    	tfp->open (dumpfile_name);
+    }
 
 	// check for command line argument
-	if (argc > 1) {
-		env_memory0.load_ihex (argv[1]);
+	if (memfile) {
+		printf ("Loading IHEX file %s\n", mem_src_name);
+		env_memory0.load_ihex (mem_src_name);
 	}
 	
 	// set reset to 0 before sim start
@@ -114,9 +141,9 @@ int sc_main(int argc, char *argv[])
     sc_start();
     /*
     sc_close_vcd_trace_file (trace_file);
-    tfp->close();
     */
-    
+    if (dumping)
+    	tfp->close();
     
     return 0;
 }
