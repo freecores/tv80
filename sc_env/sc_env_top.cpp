@@ -5,6 +5,7 @@
 #include "Vtv80s.h"
 #include "SpTraceVcd.h"
 #include <unistd.h>
+#include "z80_decoder.h"
 
 extern char *optarg;
 extern int optind, opterr, optopt;
@@ -17,8 +18,9 @@ int sc_main(int argc, char *argv[])
 	char *dumpfile_name;
 	char *mem_src_name;
 	SpTraceFile *tfp;
+    z80_decoder dec0 ("dec0");
 	
-	while ( (index = getopt(argc, argv, "d:i:")) != -1) {
+	while ( (index = getopt(argc, argv, "d:i:k")) != -1) {
 		printf ("DEBUG: getopt optind=%d index=%d char=%c\n", optind, index, (char) index);
 		if  (index == 'd') {
 			dumpfile_name = new char(strlen(optarg)+1);
@@ -29,6 +31,9 @@ int sc_main(int argc, char *argv[])
 			mem_src_name = new char(strlen(optarg)+1);
 			strcpy (mem_src_name, optarg);
 			memfile = true;
+		} else if (index == 'k') {
+			printf ("Z80 Instruction decode enabled\n");
+			dec0.en_decode = true;
 		}
 	}
 	sc_clock clk("clk125", 8, SC_NS, 0.5);
@@ -98,6 +103,15 @@ int sc_main(int argc, char *argv[])
     tv_resp0.di_resp (di_resp);
     tv_resp0.dout (dout);
     tv_resp0.halt_n (halt_n);
+    
+    dec0.clk (clk);
+    dec0.m1_n (m1_n);
+    dec0.addr (addr);
+    dec0.mreq_n (mreq_n);
+    dec0.rd_n (rd_n);
+    dec0.wait_n (wait_n);
+    dec0.di (di);
+    dec0.reset_n (reset_n);
 
     // create dumpfile
     /*
