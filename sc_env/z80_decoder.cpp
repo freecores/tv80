@@ -5,6 +5,7 @@ char *table_cc[] = { "NZ", "Z", "NC", "C", "PO", "PE", "P", "M" };
 char *table_rp[] = {"BC", "DE", "HL", "SP" };
 char *table_rp2[] = {"BC","DE","HL","AF"};
 char *table_alu[] = {"ADD A,","ADC A,","SUB","SBC A,","AND","XOR","OR","CP"};
+char *table_im[] = {"0","0/1", "1", "2", "0", "0/1", "1", "2" };
 
 void z80_decoder::op_print ()
 {
@@ -166,12 +167,30 @@ void z80_decoder::decode_unpre()
 						case 4 :
 							op_name = "CALL %04x";
 							state = IMM2;
+							op_print();
 							break;
 						case 5 : state = PRE_DD; break;
 						case 6 : state = PRE_ED; break;
 						case 7 : state = PRE_FD; break;
 					}
 					break;
+				case 6 :
+					sprintf (op_buf, "IM %s", table_im[y]);
+					op_name = op_buf;
+					break;
+				break;
+				case 7 :
+					switch (y) {
+						case 0 : op_name="LD I,A"; break;
+						case 1 : op_name="LD R,A"; break;
+						case 2 : op_name="LD A,I"; break;
+						case 3 : op_name="LD A,R"; break;
+						case 4 : op_name="RRD"; break;
+						case 5 : op_name="RLD"; break;
+						case 6 : op_name="NOP"; break;
+						case 7 : op_name="NOP"; break;
+					}
+				break;
 			}
 		break;
 	}
@@ -251,7 +270,6 @@ void z80_decoder::event()
 			case IMM1 :
 				imm = ((unsigned int) di) & 0xff;
 				sprintf (op_buf, op_name, imm);
-				//printf ("DECODE : %02x %s\n", (int) opcode, op_name);
 				op_name = op_buf;
 				op_print();
 				break;
