@@ -1,6 +1,7 @@
 #ifndef Z80_DECODER_H_
 #define Z80_DECODER_H_
 
+#include <stdint.h>
 #include "systemc.h"
 
 typedef enum { UNPRE, PRE_CB, PRE_DD, PRE_ED, PRE_FD, DISP, IMM1, IMM2, IMM2B } dec_state;

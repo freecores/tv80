@@ -10,7 +10,8 @@ void env_memory::event()
   if (!reset_n)
   	return;
   if (!mreq_n && !wr_n && (addr < AM_DEPTH)) {
-  	ad = (int) addr;
+    ad = (int) addr;
+    assert (memory != NULL);
     memory[ad] = (unsigned char) wr_data.read();
 #ifdef DEBUG
     //printf ("MEM WR %04x=%02x\n", ad, (int) wr_data.read());
@@ -19,8 +20,9 @@ void env_memory::event()
   
   // async read output
   if (addr < AM_DEPTH) {
-  	ad = (int) addr;
-  	rd_data.write ( (unsigned int) memory[ad] );
+    ad = (int) addr;
+    assert (memory != NULL);
+    rd_data.write ( (unsigned int) memory[ad] );
   }
 }
 

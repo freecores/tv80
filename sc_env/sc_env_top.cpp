@@ -12,13 +12,15 @@
 extern char *optarg;
 extern int optind, opterr, optopt;
 
+#define FILENAME_SZ 80
+
 int sc_main(int argc, char *argv[])
 {
 	bool dumping = false;
 	bool memfile = false;
 	int index;
-	char *dumpfile_name;
-	char *mem_src_name;
+	char dumpfile_name[FILENAME_SZ];
+	char mem_src_name[FILENAME_SZ];
 	SpTraceFile *tfp;
     z80_decoder dec0 ("dec0");
 	
@@ -50,13 +52,11 @@ int sc_main(int argc, char *argv[])
 	while ( (index = getopt(argc, argv, "d:i:k")) != -1) {
 		printf ("DEBUG: getopt optind=%d index=%d char=%c\n", optind, index, (char) index);
 		if  (index == 'd') {
-			dumpfile_name = new char(strlen(optarg)+1);
-			strcpy (dumpfile_name, optarg);
+			strncpy (dumpfile_name, optarg, FILENAME_SZ);
 			dumping = true;
 			printf ("VCD dump enabled to %s\n", dumpfile_name);
 		} else if (index == 'i') {
-			mem_src_name = new char(strlen(optarg)+1);
-			strcpy (mem_src_name, optarg);
+			strncpy (mem_src_name, optarg, FILENAME_SZ);
 			memfile = true;
 		} else if (index == 'k') {
 			printf ("Z80 Instruction decode enabled\n");

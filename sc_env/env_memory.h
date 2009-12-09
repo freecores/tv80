@@ -23,7 +23,7 @@ SC_MODULE(env_memory) {
   void load_ihex (char *filename);
 
   SC_CTOR(env_memory) {
-  	memory = new unsigned char[AM_DEPTH];
+    memory = new unsigned char[AM_DEPTH];
     SC_METHOD(event);
     sensitive << clk.pos() << addr;
   }
