@@ -16,6 +16,7 @@ unsigned char foo;
 volatile unsigned char test_pass;
 static unsigned char triggers;
 int phase;
+int loop;
 char done;
 char nmi_trig;
 
@@ -31,23 +32,17 @@ void nmi_isr (void)
       nmi_trig = 0;
       //intr_cntdwn = 255;
       //intr_cntdwn = 0;
+      print ("Final interrupt\n");
       intr_cntdwn = 32;
       nmi_cntdwn = 0;
     } else
       nmi_cntdwn = 32;
-    break;
-
-    // just trigger once, and disable interrupt
-  case 3 :
-    nmi_cntdwn = 0;
-    nmi_trig_opcode = 0; // pop AF opcode
     break;
   }
 }
 
 void isr (void)
 {
-  int i;
   triggers++;
 
   switch (phase) {
@@ -57,6 +52,7 @@ void isr (void)
       phase += 1;
       triggers = 0;
       intr_cntdwn = 0;
+      print ("Starting NMIs\n");
       nmi_cntdwn = 64;
     } else {
       intr_cntdwn = 32;
@@ -65,33 +61,16 @@ void isr (void)
     break;
 
 
-    // int / nmi interaction
-    // in this phase set up interrupt call
-    // which will be interrupted by an nmi
   case 2 :
-    phase += 1;
-    triggers = 0;
-    nmi_trig = 0;
-    intr_cntdwn = 20;
-    nmi_trig_opcode = 0xF1; // pop AF opcode
-
-    break;
-
-    // wait for a while while servicing interrupt
-    // nmi should interrupt us and increment nmi_trig
-    // if test pass is true when we are done then exit
-  case 3 :
     intr_cntdwn = 0;
-    if (nmi_trig == 1)
-      test_pass = 1;
+    test_pass = 1;
     break;
-    
   }
 }
 
 int main ()
 {
-  int i;
+  //int i;
   unsigned char check;
 
   test_pass = 0;
@@ -101,10 +80,11 @@ int main ()
   phase = 0;
 
   // start interrupt countdown
+  print ("Starting interrupts\n");
   intr_cntdwn = 64;
   set_timeout (50000);
 
-  for (i=0; i<1024; i++) {
+  for (loop=0; loop<1024; loop++) {
     if (test_pass)
       break;
     check = sim_ctl_port;
