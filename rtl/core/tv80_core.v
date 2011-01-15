@@ -24,8 +24,8 @@
 
 module tv80_core (/*AUTOARG*/
   // Outputs
-  m1_n, iorq, no_read, write, rfsh_n, halt_n, busak_n, A, dout, mc, ts, 
-  intcycle_n, IntE, stop, 
+  m1_n, iorq, no_read, write, rfsh_n, halt_n, busak_n, A, dout, mc,
+  ts, intcycle_n, IntE, stop,
   // Inputs
   reset_n, clk, cen, wait_n, int_n, nmi_n, busrq_n, dinst, di
   );
@@ -345,8 +345,8 @@ module tv80_core (/*AUTOARG*/
   
           
   always @(/*AUTOSENSE*/ALU_Q or BusAck or BusB or DI_Reg
-           or ExchangeRp or IR or Save_ALU_r or Set_Addr_To or XY_Ind
-           or XY_State or cen or last_tstate or mcycle)
+	   or ExchangeRp or IR or Save_ALU_r or Set_Addr_To or XY_Ind
+	   or XY_State or cen or last_tstate or mcycle)
     begin
       ClkEn = cen && ~ BusAck;
 
@@ -738,6 +738,10 @@ module tv80_core (/*AUTOARG*/
                           begin
                             ACC <= #1 I;
                             F[Flag_P] <= #1 IntE_FF2;
+			    F[Flag_Z] <= (I == 0);
+			    F[Flag_S] <= I[7];
+			    F[Flag_H] <= 0;
+			    F[Flag_N] <= 0; 
                           end
                         
                         2'b01 :
@@ -748,6 +752,10 @@ module tv80_core (/*AUTOARG*/
                             ACC <= #1 0;
                             `endif
                             F[Flag_P] <= #1 IntE_FF2;
+			    F[Flag_Z] <= (I == 0);
+			    F[Flag_S] <= I[7];
+			    F[Flag_H] <= 0;
+			    F[Flag_N] <= 0; 
                           end
                         
                         2'b10 :
@@ -921,7 +929,7 @@ module tv80_core (/*AUTOARG*/
   
 
   always @(/*AUTOSENSE*/Alternate or ExchangeDH or IncDec_16
-           or RegAddrA_r or RegAddrB_r or XY_State or mcycle or tstate)
+	   or RegAddrA_r or RegAddrB_r or XY_State or mcycle or tstate)
     begin
       if ((tstate[2] || (tstate[3] && mcycle[0] && IncDec_16[2] == 1'b1)) && XY_State == 2'b00)
         RegAddrA = { Alternate, IncDec_16[1:0] };
@@ -942,8 +950,8 @@ module tv80_core (/*AUTOARG*/
   
 
   always @(/*AUTOSENSE*/ALU_Op_r or Auto_Wait_t1 or ExchangeDH
-           or IncDec_16 or Read_To_Reg_r or Save_ALU_r or mcycle
-           or tstate or wait_n)
+	   or IncDec_16 or Read_To_Reg_r or Save_ALU_r or mcycle
+	   or tstate or wait_n)
     begin
       RegWEH = 1'b0;
       RegWEL = 1'b0;
@@ -983,7 +991,7 @@ module tv80_core (/*AUTOARG*/
   
 
   always @(/*AUTOSENSE*/ExchangeDH or ID16 or IncDec_16 or RegBusA_r
-           or RegBusB or Save_Mux or mcycle or tstate)
+	   or RegBusB or Save_Mux or mcycle or tstate)
     begin
       RegDIH = Save_Mux;
       RegDIL = Save_Mux;
@@ -1128,7 +1136,7 @@ module tv80_core (/*AUTOARG*/
 `endif  
 
   always @(/*AUTOSENSE*/BusAck or Halt_FF or I_DJNZ or IntCycle
-           or IntE_FF1 or di or iorq_i or mcycle or tstate)
+	   or IntE_FF1 or di or iorq_i or mcycle or tstate)
     begin
       mc = mcycle;
       ts = tstate;
@@ -1323,7 +1331,7 @@ module tv80_core (/*AUTOARG*/
     end
 
   always @(/*AUTOSENSE*/BTR_r or DI_Reg or IncDec_16 or JumpE or PC
-           or RegBusA or RegBusC or SP or tstate)
+	   or RegBusA or RegBusC or SP or tstate)
     begin
       if (JumpE == 1'b1 ) 
         begin
