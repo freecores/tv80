@@ -51,8 +51,9 @@ int load_ihex(char *filename, uint8_t *buffer, int max)
       for (int c=0; c<rlen; c++) {
         sscanf (lp, "%02x", &databyte);
         lp += 2;
+        assert ((addr+c) < max);
         buffer[addr+c] = databyte; dcount++;
-        assert (dcount < max);
+        //assert (dcount < max);
         if ((addr+c) > highest) highest = addr+c;
       }
       rv = readline (fh, line);

@@ -14,7 +14,7 @@ extern char *optarg;
 extern int optind, opterr, optopt;
 
 #define FILENAME_SZ 80
-#define MAX_MEM_SIZE 8192
+#define MAX_MEM_SIZE 32768
 
 int sc_main(int argc, char *argv[])
 {
