@@ -30,10 +30,9 @@ def run_verilator ():
     cmd = command + " " + " ".join(expfilelist)
     print "Executing",cmd
     os.system (cmd)
+    print "Removing old object files"
+    os.system ("rm -f obj_dir/*.o")
 
-#f = walktree (basepath, filelist[0])
-#print expfilelist
-#print f
 
 run_verilator()
 

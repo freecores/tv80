@@ -36,5 +36,10 @@ void it_cfg_driver::event()
         }
       }
     }
+
+    while (!send_queue.empty() && (send_queue.front() == 0)) {
+      send_queue.pop();
+      addr++;
+    }
   }
 }

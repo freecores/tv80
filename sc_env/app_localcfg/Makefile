@@ -41,6 +41,9 @@ $(VERIDIR)/Vlcfg__Trace__Slow.o:
 Sp.o: $(SYSTEMPERL)/Sp.cpp
 	$(CXX) -I$(SYSTEMPERL) -c $^
 
+newcode:
+	rm -f obj_dir/*.o
+
 clean:
 	rm -f *.o
 	rm -f obj_dir/*.o

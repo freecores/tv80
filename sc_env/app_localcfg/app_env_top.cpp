@@ -9,6 +9,7 @@
 #include "it_cfg_monitor.h"
 #include "Vlcfg.h"
 #include "load_ihex.h"
+#include <assert.h>
 
 extern char *optarg;
 extern int optind, opterr, optopt;
@@ -25,6 +26,7 @@ int sc_main(int argc, char *argv[])
   char mem_src_name[FILENAME_SZ];
   uint8_t memory[MAX_MEM_SIZE];
   VerilatedVcdSc *tfp;
+  int run_time = 5; // in microseconds
   //z80_decoder dec0 ("dec0");
 
   sc_clock clk("clk125", 8, SC_NS, 0.5);
@@ -52,7 +54,7 @@ int sc_main(int argc, char *argv[])
   // clear program memory
   for (int i=0; i<MAX_MEM_SIZE; i++) memory[i] = 0;
 
-  while ( (index = getopt(argc, argv, "d:i:k")) != -1) {
+  while ( (index = getopt(argc, argv, "d:i:t:")) != -1) {
     printf ("DEBUG: getopt optind=%d index=%d char=%c\n", optind, index, (char) index);
     if  (index == 'd') {
       strncpy (dumpfile_name, optarg, FILENAME_SZ);
@@ -61,6 +63,12 @@ int sc_main(int argc, char *argv[])
     } else if (index == 'i') {
       strncpy (mem_src_name, optarg, FILENAME_SZ);
       memfile = true;
+    } else if (index == 't') {
+      run_time = atoi (optarg);
+      assert (run_time > 0);
+      printf ("Running for %d microseconds\n", run_time);
+    } else {
+      printf ("Unknown index %c\n", (char) index);
     }
   }
 
@@ -126,7 +134,7 @@ int sc_main(int argc, char *argv[])
     while (bused <= max) {
       cword = 0;
       for (int i=0; i<4; i++) cword |= (memory[bused++] << (i*8));
-      printf ("Queueing %x\n", cword);
+      //printf ("Queueing %x\n", cword);
       driver.add_queue (cword);
     }
   }
@@ -145,7 +153,7 @@ int sc_main(int argc, char *argv[])
   sc_start (sc_time(2500,SC_NS));
   lcfg_proc_reset.write(0);
 
-  sc_start (sc_time(5000, SC_NS));
+  sc_start (sc_time(run_time, SC_US));
 
   /*
   sc_close_vcd_trace_file (trace_file);
