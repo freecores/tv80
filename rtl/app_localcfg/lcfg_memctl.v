@@ -82,17 +82,9 @@ module lcfg_memctl
   reg           a_wip, nxt_a_wip;  // write (read-cache-fill) in progress by A
   reg           b_rip, nxt_b_rip;  // read in progress by B
   wire          c_rip = cfgi_trdy;
-  wire          c_rip = cfgi_trdy;
   wire          a_cache_hit, b_cache_hit;
 
   /*AUTOWIRE*/
-
-/* -----\/----- EXCLUDED -----\/-----
-  assign #1     t_ram_nwrt = ram_nwrt;
-  assign #1     t_ram_nce = ram_nce;
-  assign #1     t_ram_addr = ram_addr;
-  assign #1     t_ram_din = ram_din;
- -----/\----- EXCLUDED -----/\----- */
 
   assign        cfgi_rd_data = dout;
   assign        b_rdata = dout;
@@ -331,11 +323,7 @@ module lcfg_memctl
 
           if (cfgi_irdy)
             begin
-              if ((!a_mreq_n | !b_mreq_n) & !c_rip)
-                begin
-                  // access by A or B ports, stall until memory is free
-                end
-              else
+              if ((a_mreq_n & b_mreq_n) & !c_rip & !a_wip)
                 begin
                   if (cfgi_write & !cfgi_trdy)
                     begin
@@ -364,7 +352,7 @@ module lcfg_memctl
       if (~reset_n)
         begin
           ca_addr <= 13'h0;
-          cvld    <= #1 0;
+          cvld    <= 0;
           /*AUTORESET*/
           // Beginning of autoreset for uninitialized flops
           a_prio <= 1'h0;
@@ -380,17 +368,17 @@ module lcfg_memctl
         end
       else
         begin
-          cvld    <= #1 nxt_cvld;
-          ca_addr <= #1 nxt_ca_addr;
-          ca_data <= #1 nxt_ca_data;
-          wcvld   <= #1 nxt_wcvld;
-          wc_addr <= #1 nxt_wc_addr;
-          wc_data <= #1 nxt_wc_data;
-          a_prio  <= #1 nxt_a_prio;
-          a_rip   <= #1 nxt_a_rip;
-          b_rip   <= #1 nxt_b_rip;
-          a_wip   <= #1 nxt_a_wip;
-          cfgi_trdy <= #1 nxt_cfgi_trdy;
+          cvld    <= nxt_cvld;
+          ca_addr <= nxt_ca_addr;
+          ca_data <= nxt_ca_data;
+          wcvld   <= nxt_wcvld;
+          wc_addr <= nxt_wc_addr;
+          wc_data <= nxt_wc_data;
+          a_prio  <= nxt_a_prio;
+          a_rip   <= nxt_a_rip;
+          b_rip   <= nxt_b_rip;
+          a_wip   <= nxt_a_wip;
+          cfgi_trdy <= nxt_cfgi_trdy;
         end
     end  
 
