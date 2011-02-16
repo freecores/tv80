@@ -73,7 +73,6 @@ module lcfg
   wire [7:0]     dma_rd_data;
   reg [31:0]     read_hold;
   reg            read_latch;
-  wire           dma_int_n;              // From dma of mx_lcfg_dma.v
   wire           proc_reset_n;
   /*AUTOWIRE*/
   // Beginning of automatic wires (for undeclared instantiated-module outputs)
@@ -101,7 +100,7 @@ module lcfg
      .reset_n				(proc_reset_n),
      .clk				(clk),
      .wait_n				(wait_n),
-     .int_n				(dma_int_n),
+     .int_n				(1'b1),
      .nmi_n				(1'b1),
      .busrq_n				(1'b1),
      .di				(di));
@@ -208,7 +207,6 @@ module lcfg
      .reset_n                           (reset_n),
      .addr                              (addr[15:0]),
      .cd_wdata                          (dout[7:0]),             // Templated
-     .mreq_n                            (mreq_n),
      .rd_n                              (rd_n),
      .wr_n                              (wr_n),
      .iorq_n                            (iorq_n),

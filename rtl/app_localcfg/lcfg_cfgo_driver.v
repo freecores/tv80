@@ -16,7 +16,7 @@ module lcfg_cfgo_driver
   cd_rdata, cfgo_wait_n, cfgo_irdy, cfgo_addr, cfgo_write,
   cfgo_wr_data,
   // Inputs
-  clk, reset_n, addr, cd_wdata, mreq_n, rd_n, wr_n, iorq_n, cfgo_trdy,
+  clk, reset_n, addr, cd_wdata, rd_n, wr_n, iorq_n, cfgo_trdy,
   cfgo_rd_data
   );
 
@@ -29,7 +29,6 @@ module lcfg_cfgo_driver
   output [7:0]   cd_rdata;
   input [7:0]    cd_wdata;
   
-  input          mreq_n;
   input          rd_n, wr_n;
   input          iorq_n;
   output         cfgo_wait_n;
@@ -62,7 +61,7 @@ module lcfg_cfgo_driver
   reg [31:0]     chold, nxt_chold;
   reg [3:0]      state, nxt_state;
   
-  assign rf_irdy = !mreq_n & !iorq_n & ((addr[7:0] & 8'hF8) == io_base_addr);
+  assign rf_irdy = !iorq_n & ((addr[7:0] & 8'hF8) == io_base_addr);
   assign rf_write = ~wr_n;
   assign cfgo_addr = { cfg_addr1, cfg_addr0 };
   assign cfgo_wr_data = chold;
@@ -184,5 +183,5 @@ module lcfg_cfgo_driver
      .cfg_data3_rd_data                 (chold[31:24]),          // Templated
      .cfg_data3_rd_ack                  (1'b1),                  // Templated
      .cfg_data3_wr_ack                  (state[s_idle]),         // Templated
-     .cfg_status                        ({4'h0, state}));         // Templated
+     .cfg_status                        ({4'h0,state}));          // Templated
 endmodule
