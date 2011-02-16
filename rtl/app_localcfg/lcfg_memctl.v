@@ -82,7 +82,7 @@ module lcfg_memctl
   reg           b_rip, nxt_b_rip;  // read in progress by B
   wire          t_ram_nwrt, t_ram_nce;
   wire [35:0]   t_ram_din;
-  wire          c_rip = lcfg_data_rd_ack;
+  wire          c_rip = cfgi_trdy;
   wire          a_cache_hit, b_cache_hit;
   wire [12:0]   t_ram_addr;
 
@@ -106,12 +106,12 @@ module lcfg_memctl
   /* behave1p_mem AUTO_TEMPLATE
    (
    // Outputs
-   .rd_data                              (dout),
+   .rd_data                             (dout),
    // Inputs
-   .wr_en                             (!t_ram_nce & !t_ram_nwrt),
-   .rd_en                             (!t_ram_nce & t_ram_nwrt),
-   .clk                               (clk),
-   .wr_data                               (t_ram_din[]),
+   .wr_en                               (!t_ram_nce & !t_ram_nwrt),
+   .rd_en                               (!t_ram_nce & t_ram_nwrt),
+   .clk                                 (clk),
+   .d_in                                (t_ram_din[]),
    .addr                                (t_ram_addr[]), 
    );
    */
@@ -126,7 +126,7 @@ module lcfg_memctl
      .wr_en                             (!t_ram_nce & !t_ram_nwrt), // Templated
      .rd_en                             (!t_ram_nce & t_ram_nwrt), // Templated
      .clk                               (clk),                   // Templated
-     .d_in                              (d_in[31:0]),
+     .d_in                              (t_ram_din[31:0]),       // Templated
      .addr                              (t_ram_addr[12:0]));      // Templated
   
   always @*
@@ -148,8 +148,6 @@ module lcfg_memctl
       nxt_wc_data = wc_data;
       nxt_wc_addr = wc_addr;
       nxt_cfgi_trdy = 0;
-      //nxt_lcfg_data_rd_ack = 0;
-      //nxt_lcfg_data_wr_ack = 0;
 
       if (a_cache_hit)
         begin
@@ -346,8 +344,8 @@ module lcfg_memctl
                       nxt_cfgi_trdy = 1;
                       ram_nce = 0;
                       ram_nwrt = 0;
-                      ram_addr = lcfg_cfg_addr;
-                      ram_din = lcfg_data_wr_data;
+                      ram_addr = cfgi_addr;
+                      ram_din = cfgi_wr_data;
                       // invalidate caches as precaution
                       nxt_cvld = 0;
                       nxt_wcvld = 0;
@@ -355,7 +353,7 @@ module lcfg_memctl
                   else if (!cfgi_write & !cfgi_trdy)
                     begin
                       ram_nce = 0;
-                      ram_addr = lcfg_cfg_addr;
+                      ram_addr = cfgi_addr;
                       nxt_cfgi_trdy = 1;
                     end
                 end

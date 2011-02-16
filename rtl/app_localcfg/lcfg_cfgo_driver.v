@@ -129,6 +129,7 @@ module lcfg_cfgo_driver
      .cfg_data[0-3]_wr_ack              (state[s_idle]),
      .cfg_data\([0-3]\)_wr_stb          (wr_stb[\1]),
      .cfg_data\([0-3]\)_rd_stb          (rd_stb[\1]),
+     .cfg_status ({4'h0,state}),
  );
  */
   lcfg_cfgo_regs cfgo_regs
@@ -169,5 +170,5 @@ module lcfg_cfgo_driver
      .cfg_data3_rd_data                 (chold[31:24]),          // Templated
      .cfg_data3_rd_ack                  (1'b1),                  // Templated
      .cfg_data3_wr_ack                  (state[s_idle]),         // Templated
-     .cfg_status                        (cfg_status[7:0]));
+     .cfg_status                        ({4'h0,state}));          // Templated
 endmodule

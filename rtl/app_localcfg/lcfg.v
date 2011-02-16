@@ -19,9 +19,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 module lcfg
   (input         clk,
    input         reset_n,
+   input         lcfg_init,  // initialize memory to all 0
    input         lcfg_proc_reset,
-   input         scan_mode,
-   input         scan_enable,
 
    // incoming config interface to 
    // read/write processor memory
@@ -84,7 +83,7 @@ module lcfg
   wire           ram_mreq_n;
 
   assign ram_mreq_n = ~ (~mreq_n & ~addr[15]);
-  assign         proc_reset_n = (scan_mode) ? 1'b1 : ~lcfg_proc_reset;
+  assign         proc_reset_n = ~lcfg_proc_reset;
 
   tv80s tv80 (
      // Outputs
