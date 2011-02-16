@@ -26,7 +26,7 @@ module lcfg
    // read/write processor memory
    input         cfgi_irdy,
    output        cfgi_trdy,
-   input [14:0]  cfgi_addr,
+   input [12:0]  cfgi_addr,
    input         cfgi_write,
    input [31:0]  cfgi_wr_data,
    output [31:0] cfgi_rd_data,
@@ -161,7 +161,7 @@ module lcfg
  
     );
 */
-  lcfg_memctl memctl
+  lcfg_memctl #(.mem_asz(13)) memctl
     (/*AUTOINST*/
      // Outputs
      .a_wait_n                          (ram_wait_n),            // Templated
@@ -184,16 +184,10 @@ module lcfg
      .b_wdata                           (32'h0),                 // Templated
      .lcfg_init                         (lcfg_init),
      .cfgi_irdy                         (cfgi_irdy),
-     .cfgi_addr                         (cfgi_addr[14:0]),
+     .cfgi_addr                         (cfgi_addr[12:0]),
      .cfgi_write                        (cfgi_write),
-     .cfgi_wr_data                      (cfgi_wr_data[31:0]),
-     .test_resume_h                     (test_resume_h));
+     .cfgi_wr_data                      (cfgi_wr_data[31:0]));
  
-  // DMA not needed
-  // Need GP interrupt register for timer
-
-  assign cfg_addr = { reg_addr1, reg_addr0 };
-  assign cfg_wr_data = { reg_wr_data3, reg_wr_data2, reg_wr_data1, reg_wr_data0 };
 
 /* lcfg_cfgo_driver AUTO_TEMPLATE
  (

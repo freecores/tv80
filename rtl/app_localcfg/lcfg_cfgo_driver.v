@@ -74,7 +74,7 @@ module lcfg_cfgo_driver
       nxt_chold = chold;
       nxt_state = state;
       
-      case (1'b1)
+      case (1'b1) /* verilator lint_off CASEINCOMPLETE */
         state[s_idle] :
           begin
             case (wr_stb)
@@ -109,9 +109,22 @@ module lcfg_cfgo_driver
           begin
             nxt_state = 1 << s_idle;
           end
-      endcase // case (1'b1)
+      endcase // verilator lint_on CASEINCOMPLETE
     end // always @ *
-  
+
+  always @(posedge clk or negedge reset_n)
+    begin
+      if (~reset_n)
+        begin
+          state <= 1 << s_idle;
+          chold <= 0;
+        end
+      else
+        begin
+          state <= nxt_state;
+          chold <= nxt_chold;
+        end
+    end
   
 /* lcfg_cfgo_regs AUTO_TEMPLATE
  (
@@ -125,6 +138,7 @@ module lcfg_cfgo_driver
      .cfg_data2_rd_data (chold[23:16]),
      .cfg_data3_rd_data (chold[31:24]),
      .cfg_data0_rd_ack                  (state[s_ack]),
+     .cfg_status                        ({4'h0, state}),
      .cfg_data[1-3]_rd_ack              (1'b1),
      .cfg_data[0-3]_wr_ack              (state[s_idle]),
      .cfg_data\([0-3]\)_wr_stb          (wr_stb[\1]),
@@ -170,5 +184,5 @@ module lcfg_cfgo_driver
      .cfg_data3_rd_data                 (chold[31:24]),          // Templated
      .cfg_data3_rd_ack                  (1'b1),                  // Templated
      .cfg_data3_wr_ack                  (state[s_idle]),         // Templated
-     .cfg_status                        ({4'h0,state}));          // Templated
+     .cfg_status                        ({4'h0, state}));         // Templated
 endmodule

@@ -23,8 +23,11 @@ module lcfg_memctl
   // Inputs
   clk, reset_n, a_mreq_n, a_rd_n, a_wr_n, a_addr, a_wdata, b_mreq_n,
   b_wr_n, b_addr, b_wdata, lcfg_init, cfgi_irdy, cfgi_addr,
-  cfgi_write, cfgi_wr_data, test_resume_h
+  cfgi_write, cfgi_wr_data
   );
+
+  // address size of memory
+  parameter mem_asz = 13, mem_depth = 8192;
 
   input         clk;
   input         reset_n;
@@ -33,7 +36,7 @@ module lcfg_memctl
   input         a_mreq_n;
   input         a_rd_n;
   input         a_wr_n;
-  input [14:0]  a_addr;
+  input [mem_asz+1:0]  a_addr;
   output        a_wait_n;
   input [7:0]   a_wdata;
   output [7:0]  a_rdata;
@@ -42,7 +45,7 @@ module lcfg_memctl
   // read port B
   input         b_mreq_n;
   input         b_wr_n;
-  input [12:0]  b_addr;
+  input [mem_asz-1:0]  b_addr;
   output        b_wait_n;
   input [31:0]  b_wdata;
   output [31:0] b_rdata;
@@ -54,24 +57,22 @@ module lcfg_memctl
   // read/write processor memory
   input         cfgi_irdy;
   output     cfgi_trdy;
-  input [14:0]  cfgi_addr;
+  input [mem_asz-1:0] cfgi_addr;
   input         cfgi_write;
   input [31:0]  cfgi_wr_data;
   output [31:0] cfgi_rd_data;
   reg           cfgi_trdy, nxt_cfgi_trdy;
 
-  input	        test_resume_h;
-  
   reg           ram_nwrt;
   reg           ram_nce;
   reg [31:0]    ram_din;
-  reg [12:0]    ram_addr;
+  reg [mem_asz-1:0]    ram_addr;
   wire [31:0]   dout;
   reg [7:0]     a_rdata;
 
-  reg [12:0]    ca_addr, nxt_ca_addr;
+  reg [mem_asz-1:0]    ca_addr, nxt_ca_addr;
   reg [31:0]    ca_data, nxt_ca_data;
-  reg [12:0]    wc_addr, nxt_wc_addr;
+  reg [mem_asz-1:0]    wc_addr, nxt_wc_addr;
   reg [31:0]    wc_data, nxt_wc_data;
   reg           cvld, nxt_cvld;
   reg           wcvld, nxt_wcvld;
@@ -80,54 +81,51 @@ module lcfg_memctl
   reg           a_rip, nxt_a_rip;  // read in progress by A
   reg           a_wip, nxt_a_wip;  // write (read-cache-fill) in progress by A
   reg           b_rip, nxt_b_rip;  // read in progress by B
-  wire          t_ram_nwrt, t_ram_nce;
-  wire [35:0]   t_ram_din;
+  wire          c_rip = cfgi_trdy;
   wire          c_rip = cfgi_trdy;
   wire          a_cache_hit, b_cache_hit;
-  wire [12:0]   t_ram_addr;
 
   /*AUTOWIRE*/
-  // Beginning of automatic wires (for undeclared instantiated-module outputs)
-  wire [31:0]           d_out;                  // From mem of behave1p_mem.v
-  // End of automatics
 
+/* -----\/----- EXCLUDED -----\/-----
   assign #1     t_ram_nwrt = ram_nwrt;
   assign #1     t_ram_nce = ram_nce;
   assign #1     t_ram_addr = ram_addr;
   assign #1     t_ram_din = ram_din;
+ -----/\----- EXCLUDED -----/\----- */
 
-  assign        lcfg_data_rd_data = dout;
+  assign        cfgi_rd_data = dout;
   assign        b_rdata = dout;
 
-  assign a_cache_hit = cvld & (ca_addr == a_addr[14:2]);
-  assign b_cache_hit = wcvld & (wc_addr == a_addr[14:2]);
+  assign a_cache_hit = cvld & (ca_addr == a_addr[mem_asz+1:2]);
+  assign b_cache_hit = wcvld & (wc_addr == a_addr[mem_asz+1:2]);
   
   
   /* behave1p_mem AUTO_TEMPLATE
    (
    // Outputs
-   .rd_data                             (dout),
+   .d_out                              (dout),
    // Inputs
-   .wr_en                               (!t_ram_nce & !t_ram_nwrt),
-   .rd_en                               (!t_ram_nce & t_ram_nwrt),
-   .clk                                 (clk),
-   .d_in                                (t_ram_din[]),
-   .addr                                (t_ram_addr[]), 
+   .wr_en                             (!ram_nce & !ram_nwrt),
+   .rd_en                             (!ram_nce & ram_nwrt),
+   .clk                               (clk),
+   .d_in                               (ram_din[]),
+   .addr                                (ram_addr[]), 
    );
    */
 
   behave1p_mem #(.width(32),
-                 .depth (8192),
-                 .addr_sz (13))  mem
+                 .depth (mem_depth),
+                 .addr_sz (mem_asz))  mem
     (/*AUTOINST*/
      // Outputs
-     .d_out                             (d_out[31:0]),
+     .d_out                             (dout),                  // Templated
      // Inputs
-     .wr_en                             (!t_ram_nce & !t_ram_nwrt), // Templated
-     .rd_en                             (!t_ram_nce & t_ram_nwrt), // Templated
+     .wr_en                             (!ram_nce & !ram_nwrt),  // Templated
+     .rd_en                             (!ram_nce & ram_nwrt),   // Templated
      .clk                               (clk),                   // Templated
-     .d_in                              (t_ram_din[31:0]),       // Templated
-     .addr                              (t_ram_addr[12:0]));      // Templated
+     .d_in                              (ram_din[31:0]),         // Templated
+     .addr                              (ram_addr[(mem_asz)-1:0])); // Templated
   
   always @*
     begin
@@ -135,7 +133,7 @@ module lcfg_memctl
       ram_nwrt = 1;
       ram_nce  = 1;
       ram_din = 32'h0;
-      ram_addr = a_addr[14:2];
+      ram_addr = a_addr[mem_asz+1:2];
       a_wait_n = 1;
       b_wait_n = 1;
       nxt_a_prio = a_prio;
@@ -203,13 +201,13 @@ module lcfg_memctl
                       a_wait_n   = 0;
                       if (a_rip)
                         begin
-                          nxt_ca_addr = a_addr[14:2];
+                          nxt_ca_addr = a_addr[mem_asz+1:2];
                           nxt_ca_data = dout;
                           nxt_cvld    = 1;
                         end
                       else if (a_prio | b_mreq_n)
                         begin                  
-                          ram_addr = a_addr[14:2];
+                          ram_addr = a_addr[mem_asz+1:2];
                           nxt_a_prio = 0;
                           ram_nce    = 0;
                           nxt_a_rip  = 1;
@@ -247,7 +245,7 @@ module lcfg_memctl
                         begin
                           a_wait_n    = 0;
                           nxt_wc_data = dout;
-                          nxt_wc_addr = a_addr[14:2];
+                          nxt_wc_addr = a_addr[mem_asz+1:2];
                           nxt_wcvld   = 1;
                         end
 
@@ -271,7 +269,7 @@ module lcfg_memctl
                       else if (a_prio | b_mreq_n)
                         begin
                           a_wait_n   = 0;
-                          ram_addr = a_addr[14:2];
+                          ram_addr = a_addr[mem_asz+1:2];
                           nxt_a_prio = 0;
                           ram_nce    = 0;
                           nxt_a_rip  = 1;
@@ -344,7 +342,7 @@ module lcfg_memctl
                       nxt_cfgi_trdy = 1;
                       ram_nce = 0;
                       ram_nwrt = 0;
-                      ram_addr = cfgi_addr;
+                      ram_addr = cfgi_addr[mem_asz-1:0];
                       ram_din = cfgi_wr_data;
                       // invalidate caches as precaution
                       nxt_cvld = 0;
@@ -353,7 +351,7 @@ module lcfg_memctl
                   else if (!cfgi_write & !cfgi_trdy)
                     begin
                       ram_nce = 0;
-                      ram_addr = cfgi_addr;
+                      ram_addr = cfgi_addr[mem_asz-1:0];
                       nxt_cfgi_trdy = 1;
                     end
                 end
@@ -375,7 +373,7 @@ module lcfg_memctl
           b_rip <= 1'h0;
           ca_data <= 32'h0;
           cfgi_trdy <= 1'h0;
-          wc_addr <= 13'h0;
+          wc_addr <= {mem_asz{1'b0}};
           wc_data <= 32'h0;
           wcvld <= 1'h0;
           // End of automatics
