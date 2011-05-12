@@ -30,6 +30,8 @@ int inline readline(FILE *fh, char *buf)
 {
 	int c = 1, cnt = 0;
 	
+	assert (fh != NULL);
+	
 	if (feof(fh)) {
 		*buf = (char) 0;
 		return 0;
@@ -86,6 +88,7 @@ int inline readline(FILE *fh, char *buf)
       	sscanf (lp, "%02x", &databyte);
       	lp += 2;
       	//printf ("DEBUG: loaded mem[%04x]=%02x\n", addr+c, databyte);
+      	assert ( (addr+c) < AM_DEPTH );
       	memory[addr+c] = databyte; dcount++;
       }
       rv = readline (fh, line);

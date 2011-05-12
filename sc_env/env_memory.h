@@ -3,7 +3,7 @@
 #ifndef ENV_MEMORY_H
 #define ENV_MEMORY_H
 #define AM_ASZ 16
-#define AM_DEPTH (1<<16)
+#define AM_DEPTH (1<<AM_ASZ)
 
 SC_MODULE(env_memory) {
 

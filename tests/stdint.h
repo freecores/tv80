@@ -20,6 +20,7 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+#ifndef _SYS_TYPES_H
 #ifndef _STDINT_H
 #define _STDINT_H       1
 // reduced version of stdint.h for Z80
@@ -31,4 +32,5 @@ typedef unsigned char           uint8_t;
 typedef unsigned int            uint16_t;
 typedef unsigned long           uint32_t;
 
+#endif
 #endif

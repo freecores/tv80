@@ -106,8 +106,8 @@ char cksum_asm (char *buf, char len) {
   _endasm;
 }
 
-char cksum_sw (char *buf, char len) {
-  char rv, i;
+char cksum_sw (char *buf, int len) {
+  char rv; int i;
 
   rv = 0;
   for (i=0; i<len; i++) {
@@ -119,17 +119,19 @@ char cksum_sw (char *buf, char len) {
 
 int main ()
 {
-  char i, cs_a, cs_b;
+  unsigned char cs_a, cs_b;
+  int  i;
 
   max_timeout_high = 0xff;
 
-  for (i=0; i<BUF_SIZE; i=i+1) {
+  for (i=0; i<BUF_SIZE; i++) {
     buf[i] = i+1;
+    //timeout_port = 3;
   }
 
   print ("Checking OTIR\n");
-  cs_a = cksum_asm (buf, BUF_SIZE);
-  cs_b = cksum_up  (buf, BUF_SIZE);
+  cs_a = cksum_sw (buf, BUF_SIZE);
+  cs_b = cksum_up (buf, BUF_SIZE);
 
   if (cs_a != cs_b)
     sim_ctl (SC_TEST_FAILED);

@@ -2,6 +2,7 @@
 #define TV_RESPONDER_H_
 
 #include "sc_env.h"
+#include "tv80_scenv.h"
 
 SC_MODULE(tv_responder)
 {

@@ -1,5 +1,12 @@
 #include "tv_responder.h"
 
+uint64_t get_time_stamp () {
+	sc_time t;
+	
+	t = sc_time_stamp();
+	return t.value();
+}
+
 void tv_responder::event ()
 {
 	// init
@@ -11,6 +18,7 @@ void tv_responder::event ()
 	busrq_n = 1;
 	di_resp = 0;
 	*/
+	uint8_t oldval;
 	
 	if (reset_time > 0) {
 		reset_n = 0;
@@ -39,7 +47,10 @@ void tv_responder::event ()
 	   		case(0x84) : di_resp = max_timeout >> 8; break;
 
 	    	case(0x90) : di_resp = int_countdown; break;
-            case(0x91) : di_resp = checksum; break;
+            case(CKSUM_VALUE) : 
+            	di_resp = checksum; 
+				//printf ("%2.6f: Read checksum value of %02x\n", sc_time_stamp().to_seconds(), checksum);
+            	break;
             case(0x93) : di_resp = ior_value; break;
             case(0x94) : di_resp = rand();  break;
             case(0x95) : di_resp = nmi_countdown; break;
@@ -67,31 +78,26 @@ void tv_responder::event ()
     	
       	last_iowrite = true;
 		switch ( l_addr & 0xff) {
-			case(0x80) :
+			case(SIM_CTL_PORT) :
 			// dump control deprecated
 			if (l_dout == 1) {
-				printf ("%8d: --- TEST PASSED ---\n", 0);
+				printf ("%2.6f: --- TEST PASSED ---\n", sc_time_stamp().to_seconds());
 				sc_stop();
 			} else if (l_dout == 2) {
-				printf ("%8d: !!! TEST FAILED !!!\n", 0);
+				printf ("%2.6f: !!! TEST FAILED !!!\n", sc_time_stamp().to_seconds());
 				sc_stop();
 			}
 			break;
 
-			case(0x81) :
+			case(MSG_PORT) :
 	    
-	      		//printf ("%s: DEBUG   : Detected write of character %x\n", sc_time_stamp().to_string(), l_dout);
-	      		//cout << sc_time_stamp().to_string() << "DEBUG   : Detected write of character " << l_dout << endl;
 	      		if (l_dout == 0x0A) {
-					//printf ("%8d: PROGRAM : ", sc_simulation_time());
-					cout << sc_time_stamp() << ": PROGRAM : ";
+					printf ("%2.6f: PROGRAM : ", sc_time_stamp().to_seconds());
 
 					for (int i=0; i<buf_ptr; i=i+1)
-						//printf ("%s", str_buf[i]);
-						cout << str_buf[i];
+						printf ("%c", str_buf[i]);
 				  
-					//printf ("\n");
-					cout << endl;
+					printf ("\n");
 		 			buf_ptr = 0;
 				} else {
 	      			str_buf[buf_ptr] = (char) (l_dout & 0xff);
@@ -99,21 +105,26 @@ void tv_responder::event ()
 	      		}
 		    break;
 
-			case(0x82) :
+			case(TIMEOUT_PORT) :
 		    	timeout_ctl = l_dout;
 				break;
 
-			case(0x83) :
+			case(MAX_TIMEOUT_LOW) :
 				max_timeout = l_dout | (max_timeout & 0xFF00);
 				break;
 				
-			case(0x84) :
-				max_timeout = l_dout << 8 | (max_timeout & 0x00FF);
+			case(MAX_TIMEOUT_HIGH) :
+				max_timeout = (l_dout << 8) | (max_timeout & 0x00FF);
+				printf ("%2.6f: ENVIRON : Timeout reset to %d (dout=%d)\n", sc_time_stamp().to_seconds(), max_timeout, l_dout);
 				break;
 
 			case(0x90) : int_countdown = dout; break;
-			case(0x91) : checksum = dout; break;
-			case(0x92) : checksum = checksum + dout; break;
+			case(CKSUM_VALUE) : checksum = dout; break;
+			case(CKSUM_ACCUM) : 
+				oldval = checksum;
+				checksum = checksum + dout; 
+				//printf ("%2.6f: ENVIRON : cksum %02x=%02x + %02x\n", sc_time_stamp().to_seconds(), checksum, oldval, l_dout);
+				break;
 			case(0x93) : ior_value = dout; break;
 			case(0x95) : nmi_countdown = dout; break;
 			case(0xA0) : nmi_trigger = dout; break;
@@ -121,13 +132,14 @@ void tv_responder::event ()
     } else if (iorq_n)
     	last_iowrite = false;
 
-	if (timeout_ctl & 0x2)
+	if (timeout_ctl & 0x2) {
 		cur_timeout = 0;
-    else if (timeout_ctl & 0x1)
+		timeout_ctl = timeout_ctl & 1;
+	} else if (timeout_ctl & 0x1)
 		cur_timeout = cur_timeout + 1;
 
     if (cur_timeout >= max_timeout) {
-	  printf ("%8d: ERROR   : Reached timeout %d cycles\n", 0, max_timeout);
+	  printf ("%2.6f: ERROR   : Reached timeout %d cycles\n", sc_time_stamp().to_seconds(), max_timeout);
 	  //tb_top.test_fail;
 	  sc_stop();
     }

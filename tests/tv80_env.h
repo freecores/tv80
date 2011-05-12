@@ -28,6 +28,8 @@
 #ifndef TV80_ENV_H
 #define TV80_ENV_H
 
+#include "tv80_scenv.h"
+
 sfr at 0x80 sim_ctl_port;
 sfr at 0x81 msg_port;
 sfr at 0x82 timeout_port;
@@ -41,10 +43,12 @@ sfr at 0x94 randval;
 sfr at 0x95 nmi_cntdwn;
 sfr at 0xA0 nmi_trig_opcode;
 
+/* now included from scenv.h
 #define SC_TEST_PASSED 0x01
 #define SC_TEST_FAILED 0x02
 #define SC_DUMPON      0x03
 #define SC_DUMPOFF     0x04
+*/
 
 void print (char *string)
 {

@@ -955,8 +955,8 @@ module tv80_core (/*AUTOARG*/
     begin
       RegWEH = 1'b0;
       RegWEL = 1'b0;
-      if ((tstate[1] && Save_ALU_r == 1'b0 && Auto_Wait_t1 == 1'b0) ||
-          (Save_ALU_r == 1'b1 && ALU_Op_r != 4'b0111) ) 
+      if ((tstate[1] && ~Save_ALU_r && ~Auto_Wait_t1) ||
+          (Save_ALU_r && (ALU_Op_r != 4'b0111)) ) 
         begin
           case (Read_To_Reg_r)
             5'b10000 , 5'b10001 , 5'b10010 , 5'b10011 , 5'b10100 , 5'b10101 :
@@ -970,13 +970,13 @@ module tv80_core (/*AUTOARG*/
         end // if ((tstate == 1 && Save_ALU_r == 1'b0 && Auto_Wait_t1 == 1'b0) ||...
       
 
-      if (ExchangeDH == 1'b1 && (tstate[3] || tstate[4]) ) 
+      if (ExchangeDH && (tstate[3] || tstate[4]) ) 
         begin
           RegWEH = 1'b1;
           RegWEL = 1'b1;
         end
 
-      if (IncDec_16[2] && ((tstate[2] && ~wait_n && ~mcycle[0]) || (tstate[3] && mcycle[0])) ) 
+      if (IncDec_16[2] && ((tstate[2] && wait_n && ~mcycle[0]) || (tstate[3] && mcycle[0])) ) 
         begin
           case (IncDec_16[1:0])
             2'b00 , 2'b01 , 2'b10 :
