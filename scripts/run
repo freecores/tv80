@@ -25,6 +25,7 @@ def print_help ():
     print "Usage: run [-th] [-d ###] <testname>"
     print "  -t : instruction decode (trace)"
     print "  -d : enable dumping start at time ###"
+    print "  -c : enable code coverage"
     print "  -h : option help (this list)"
     sys.exit(0)
 
@@ -32,11 +33,11 @@ def print_help ():
 # t : instruction trace
 # d : dump starting at
 # h : help
-(options, args) = getopt.getopt (sys.argv[1:], "thd:")
+(options, args) = getopt.getopt (sys.argv[1:], "thcd:")
 if len(args) == 0:
     print_help()
 testname = args[0]
-simulator = "vcs +v2k -full64 -R -I +define+VCS=1 "
+simulator = "vcs +v2k -full64 -R -I +vcs+lic+wait "
 
 filelist = " -f env/tb.vf"
 testdef  = " +incdir+env -l logs/%s.log +define+DUMPFILE_NAME=\\\"logs/%s.dump\\\" +define+PROGRAM_FILE=\\\"tests/%s.vmem\\\"" % (testname, testname, testname)
@@ -47,6 +48,9 @@ for option in options:
         testdef += " +define+TV80_INSTRUCTION_DECODE=1"
     elif option[0] == "-d":
         testdef += " +define+DUMP_START=%s" % option[1]
+    elif option[0] == "-c":
+        # enable VCS code coverage
+        testdef += " -cm line+branch -cm_dir cov/"+testname+" -cm_hier env/cov.vf"
     elif option[0] == "-h":
         print_help()
     else:
