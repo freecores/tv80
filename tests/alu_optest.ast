@@ -69,12 +69,12 @@ print_number:
 	push	bc
 	ld	b, a		; store number to be printed in b
 
-	and	#0x0
+	and	#0xF0
 	sra	a
 	sra	a
 	sra	a
 	sra	a
-	cp	a, #0x10
+	cp	a, #10
 	jp	p, alpha_0
 	add	#48		; ordinal value of '0'
 	out	(_msg_port), a
@@ -85,11 +85,11 @@ alpha_0:
 
 second_digit:	
 	ld	a, b
-	and	#0x0
+	and	#0x0F
 	
-	cp	a, #0x10
+	cp	a, #10
 	jp	p, alpha_1
-	add	#0x48
+	add	#48
 	out	(_msg_port), a
 	jp	print_number_exit
 
@@ -119,8 +119,7 @@ fail_routine:
 
 
 starting_test:  .ascii "Starting test"
-	.db 0x0A
-        .db 0x00
+	.db 0x0A .db 0x00
 
 push_message: .ascii "push_0"
         .db 0xa
@@ -175,12 +174,12 @@ push_0:		ld	sp,#stack_end
 		push	bc
 		ld	bc,#0
 		pop	bc
-		ld	a,#12      ;bjp was >#0x1234
+		ld	a,#0x12      ;bjp was >#0x1234
 		cp	b
 		jr	z,push_1
 	ld	b, #0
 	jp	fail_routine
-push_1:		ld	a,#34      ;bjp was >#0x1234
+push_1:		ld	a,#0x34      ;bjp was >#0x1234
 		cp	c
 		jr	z,push_2
 	ld	b, #1
@@ -277,12 +276,12 @@ push_16:	ld	de,#0x1234
 		pop	ix
 		ld	sp,ix
 		add	hl,sp
-		ld	a,#12      ;bjp was >#0x1234
+		ld	a,#0x12      ;bjp was >#0x1234
 		cp	h
 		jr	z,push_17
 	ld	b, #16
 	jp	fail_routine
-push_17:	ld	a,#34      ;bjp was >#0x1234
+push_17:	ld	a,#0x34      ;bjp was >#0x1234
 		cp	l
 		jr	z,push_18
 	ld	b, #17
@@ -306,7 +305,7 @@ push_19:	ld	a,#0xaa
 	ld	b, #19
 	jp	fail_routine
 push_20:	ld	sp,#stack_end
-	ld hl, #ex_0
+	ld hl, #msg_ex_0
 	call print_sub
 ex_0:		ld	de,#0x1234
 		ld	hl,#0xffff
@@ -320,12 +319,12 @@ ex_1:		cp	e
 		jr	z,ex_2
 	ld	b, #1
 	jp	fail_routine
-ex_2:		ld	a,#12      ;bjp was >#0x1234
+ex_2:		ld	a,#0x12      ;bjp was >#0x1234
 		cp	h
 		jr	z,ex_3
 	ld	b, #2
 	jp	fail_routine
-ex_3:		ld	a,#34      ;bjp was >#0x1234
+ex_3:		ld	a,#0x34      ;bjp was >#0x1234
 		cp	l
 		jr	z,ex_4
 	ld	b, #3
@@ -389,12 +388,12 @@ ex_13:		cp	c
 	ld	b, #13
 	jp	fail_routine
 ex_14:		exx
-		ld	a,#12      ;bjp was >#0x1234
+		ld	a,#0x12      ;bjp was >#0x1234
 		cp	h
 		jr	z,ex_15
 	ld	b, #14
 	jp	fail_routine
-ex_15:		ld	a,#34      ;bjp was >#0x1234
+ex_15:		ld	a,#0x34      ;bjp was >#0x1234
 		cp	l
 		jr	z,ex_16
 	ld	b, #15
@@ -490,12 +489,12 @@ ex_29:		ld	a,#0xff
 		jr	z,ex_30
 	ld	b, #29
 	jp	fail_routine
-ex_30:		ld	a,#12      ;bjp was >#0x1234
+ex_30:		ld	a,#0x12      ;bjp was >#0x1234
 		cp	h
 		jr	z,ex_31
 	ld	b, #30
 	jp	fail_routine
-ex_31:		ld	a,#34      ;bjp was >#0x1234
+ex_31:		ld	a,#0x34      ;bjp was >#0x1234
 		cp	l
 		jr	z,add_0
 	ld	b, #31
@@ -821,7 +820,7 @@ add_73:		cp	#0x80+1
 	ld	b, #73
 	jp	fail_routine
 adc_0:		nop
-	ld hl, #adc_0
+	ld hl, #msg_adc_0
 	call print_sub
 		ld	a,#0                 ;clear cry 
 		add	a,#0
@@ -1155,7 +1154,7 @@ adc_80:		cp	#0x80+1
 	ld	b, #80
 	jp	fail_routine
 sub_0:		nop
-	ld hl, #sub_0
+	ld hl, #msg_sub_0
 	call print_sub
 		ld	a,#0
 		ld	b,#1
@@ -1416,7 +1415,7 @@ sub_62:		cp	#0x80+1
 	ld	b, #62
 	jp	fail_routine
 sbc_0:		nop
-	ld hl, #sbc_0
+	ld hl, #msg_sbc_0
 	call print_sub
 		ld	a,#0x7f
 		ld	b,#0
@@ -1683,7 +1682,7 @@ sbc_65:		cp	#0x55+1
 	ld	b, #65
 	jp	fail_routine
 and_0:		nop
-	ld hl, #and_0
+	ld hl, #msg_and_0
 	call print_sub
 		ld	a,#0xff
 		add	a,#1			;set carry
@@ -1899,7 +1898,7 @@ and_47:		cp	#0x55
 	ld	b, #47
 	jp	fail_routine
 or_0:		nop
-	ld hl, #or_0
+	ld hl, #msg_or_0
 	call print_sub
 		ld	a,#0
 		ld	b,#0x7f
@@ -2141,7 +2140,7 @@ or_50:		cp	#0x55
 	ld	b, #50
 	jp	fail_routine
 xor_0:		nop
-	ld hl, #xor_0
+	ld hl, #msg_xor_0
 	call print_sub
 		ld	a,#0xff
 		ld	b,#0x55
@@ -2402,7 +2401,7 @@ xor_58:		cp	#0x55
 	ld	b, #58
 	jp	fail_routine
 cp_0:		nop
-	ld hl, #cp_0
+	ld hl, #msg_cp_0
 	call print_sub
 		ld	a,#0
 		ld	b,#0
