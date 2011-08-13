@@ -49,8 +49,10 @@ endtask // dumpoff
 task clear_ram;
     integer i;
     begin
+/* -----\/----- EXCLUDED -----\/-----
       for (i=0; i<32768; i=i+1)
         tb_top.ram.mem[i] = 0;
+ -----/\----- EXCLUDED -----/\----- */
     end
 endtask
 

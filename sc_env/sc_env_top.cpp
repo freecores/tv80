@@ -1,5 +1,6 @@
 #include "systemc.h"
 #include "systemperl.h"
+#include "verilated_vcd_c.h"
 #include "env_memory.h"
 #include "tv_responder.h"
 #include "Vtv80s.h"
@@ -21,7 +22,7 @@ int sc_main(int argc, char *argv[])
 	int index;
 	char dumpfile_name[FILENAME_SZ];
 	char mem_src_name[FILENAME_SZ];
-	SpTraceFile *tfp;
+	VerilatedVcdC *tfp;
     z80_decoder dec0 ("dec0");
 	
 	sc_clock clk("clk125", 8, SC_NS, 0.5);
@@ -179,7 +180,7 @@ int sc_main(int argc, char *argv[])
     // Start Verilator traces
     if (dumping) {
     	Verilated::traceEverOn(true);
-    	tfp = new SpTraceFile;
+    	tfp = new VerilatedVcdC;
     	tv80s.trace (tfp, 99);
     	tfp->open (dumpfile_name);
     }

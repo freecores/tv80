@@ -81,13 +81,11 @@ module env_io (/*AUTOARG*/
 	      case (D_OUT)
 		1 : 
                   begin
-                    $writememh ("test_output2.hex", tb_top.rom.mem);
                     tb_top.test_pass;
                   end
 
 		2 : 
                   begin
-                    $writememh ("test_output2.hex", tb_top.rom.mem);
                     tb_top.test_fail;
                   end
 

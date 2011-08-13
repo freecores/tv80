@@ -37,10 +37,14 @@ def print_help ():
 if len(args) == 0:
     print_help()
 testname = args[0]
-simulator = "vcs +v2k -full64 -R -I +vcs+lic+wait "
 
-filelist = " -f env/tb.vf"
-testdef  = " +incdir+env -l logs/%s.log +define+DUMPFILE_NAME=\\\"logs/%s.dump\\\" +define+PROGRAM_FILE=\\\"tests/%s.vmem\\\"" % (testname, testname, testname)
+#simulator = "vcs +v2k -full64 -R -I +define+VCS=1 "
+simulator = "iverilog "
+
+#filelist = " -f env/tb.vf"
+filelist = " -f env/tb_zmem.vf"
+#testdef  = " +incdir+env -l logs/%s.log +define+DUMPFILE_NAME=\\\"logs/%s.dump\\\" +define+PROGRAM_FILE=\\\"tests/%s.vmem\\\"" % (testname, testname, testname)
+testdef  = " +incdir+env -D DUMPFILE_NAME=\\\"logs/%s.dump\\\" -D PROGRAM_FILE=\\\"tests/%s.vmem\\\"" % (testname, testname)
 
 for option in options:
     if option[0] == "-t":
@@ -64,4 +68,5 @@ command = simulator + filelist + testdef
 
 print "command:",command
 os.system (command)
+os.system ("./a.out")
 
